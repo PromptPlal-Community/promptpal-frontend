@@ -1,27 +1,46 @@
-
 function About() {
   return (
     <section className="py-16 bg-white text-gray-800">
       <div className="width container mx-auto px-6 text-center md:text-left grid md:grid-cols-2 gap-10 items-center">
-        
         {/* Text */}
         <div>
-          <h2 className="text-3xl font-bold text-purple-700 mb-4">What is Promptpal</h2>
-          <p className="mb-4">
-            PromptPal is your smart assistant for crafting and refining prompts.
-            Whether you’re a creator, marketer, or developer, PromptPal helps you
+          <h2 className="text-3xl font-bold text-[#270450] mb-4">
+            What is Promptpal
+          </h2>
+          <p className="mb-4  text-lg">
+            PrompPal is your smart assistant for crafting and refining prompts.
+            Whether you’re a creator, marketer, or developer, PrompPal helps you
             save time, improve output quality, and collaborate seamlessly.
           </p>
-          <ul className="list-disc pl-6 space-y-2">
-            <li>Craft better prompts – Boost results and streamline workflows.</li>
-            <li>Extra features – Tools and libraries to supercharge your prompts.</li>
-            <li>For everyone – Whether you’re a creator, marketer, or developer.</li>
+          <ul className="list-disc pl-6 space-y-2  text-lg">
+            <li>
+              Craft Better Prompts – Get intelligent assistance to create
+              effective prompts.
+            </li>
+
+            <li>
+              Save Time – Reduce trial-and-error and speed up your workflow.
+            </li>
+
+            <li>
+              Improve Output Quality – Consistently generate higher-quality AI
+              results.
+            </li>
+
+            <li>
+              Collaborate Easily – Share and refine prompts with your team.
+            </li>
+
+            <li>
+              For Everyone – Whether you’re a creator, marketer, or developer,
+              PrompPal adapts to your needs.
+            </li>
           </ul>
         </div>
 
         {/* Placeholder Image */}
         <div className="bg-gray-300 rounded-lg h-64 md:h-80 flex items-center justify-center">
-          <span className="text-purple-700 font-bold">[ About Image ]</span>
+          <span className="text-[#270450] font-bold">Image</span>
         </div>
       </div>
     </section>

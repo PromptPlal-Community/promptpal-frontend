@@ -10,20 +10,20 @@ import PricingPlan from "../ui/PricingPlan";
 import Footer from "../ui/Footer";
 
 function Home() {
-    return(
-        <>
-        <LandingPage />
-                      <About />
-                      <Features />
-                      <PLibrary />
-                      <HowPPWorks />
-                      <WhyPromptpal />
-                      <WhoUses />
-                      <Users />
-                      <PricingPlan />
-                      <Footer />
-        </>
-    )
+  return (
+    <>
+      <LandingPage />
+      <About />
+      <Features />
+      <PLibrary />
+      <HowPPWorks />
+      <WhyPromptpal />
+      <WhoUses />
+      <Users />
+      <PricingPlan />
+      <Footer />
+    </>
+  );
 }
 
-export default Home
+export default Home;

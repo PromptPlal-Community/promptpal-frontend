@@ -8,6 +8,8 @@ import Home from "./components/sections/Home";
 
 import Login from "./components/sections/Login";
 import Register from "./components/sections/Register";
+import EmailVerification from "./components/sections/EmailVerification";
+import EmailSuccess from "./components/sections/EmailSuccess";
 
 function App() {
   return (
@@ -28,6 +30,9 @@ function App() {
         {/* Auth Pages */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/verify" element={<EmailVerification />}/>
+        <Route path="/success" element={<EmailSuccess />}
+        />
       </Routes>
     </>
   );
