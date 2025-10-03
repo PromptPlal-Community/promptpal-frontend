@@ -63,12 +63,10 @@ function Register() {
   return (
     <>
       <section className="flex flex-col md:flex-row min-h-screen">
-       
         <div className="md:w-2/5 w-full bg-[#270450]/90 flex items-center justify-center">
           image
         </div>
 
-        
         <div className="md:w-3/5 w-full mt-15 flex flex-col items-center justify-center">
           <Toaster position="top-right" />
           <form onSubmit={handleSubmit} className="">
@@ -180,8 +178,6 @@ function Register() {
           </div>
         </div>
       </section>
-
- 
     </>
   );
 }

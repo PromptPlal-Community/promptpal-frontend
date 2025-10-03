@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle } from "lucide-react";
 
 function EmailSuccess() {
   return (
@@ -15,23 +15,20 @@ function EmailSuccess() {
             Email Verified Successfully
           </h2>
           <p className="text-gray-800 mb-6">
-           Welcome to Promptpal! Let’s get your first prompt setup.
+            Welcome to Promptpal! Let’s get your first prompt setup.
           </p>
 
           <p className="text-gray-800 mt-10 flex flex-col items-center justify-center mb-6">
-           <CheckCircle size={68} color="green" />;
-
+            <CheckCircle size={68} color="green" />;
           </p>
 
           <Link
             to="/login"
             className="px-6 py-3 bg-[#270450]
-           text-[#ffff]  font-semibold rounded-lg shadow hover:bg-[##270450]/90"
+           text-[#ffff]  font-semibold rounded-lg shadow hover:bg-[#270450]/90"
           >
             continue to login
           </Link>
-
-          
         </div>
       </div>
     </section>

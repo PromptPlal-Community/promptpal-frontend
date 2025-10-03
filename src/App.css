@@ -1,23 +1,22 @@
-.width{
+.width {
   width: 90%;
   margin: auto;
 }
 
-.priceWidth{
-width: 80%;
-margin: auto;
+.priceWidth {
+  width: 80%;
+  margin: auto;
 }
-.text{
+.text {
   width: 60%;
   margin: auto;
   text-align: center;
- 
 }
-.heading{
+.heading {
   text-align: center;
 }
 
-.searchbar{
+.searchbar {
   width: 50%;
   margin: auto;
   border-radius: 20px;
@@ -25,34 +24,33 @@ margin: auto;
   margin-bottom: 3%;
 }
 
-.libBtn{
+.libBtn {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-top: 8%;
   gap: 3%;
   flex-wrap: wrap;
-  
 }
 
-.libBtn button{
+.libBtn button {
   padding: 5px 10px;
-  border-radius: 50px; 
+  border-radius: 50px;
 }
 
-.libraryCardTop{
+.libraryCardTop {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 4%;
 }
 
-.line{
+.line {
   border-bottom: 1px solid rgb(119, 116, 116);
   margin-top: 5%;
 }
 
-.whyPp{
+.whyPp {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -62,15 +60,14 @@ margin: auto;
   border-radius: 20px;
 }
 
-.whyPPDiv{
-width: 50%;
-display: flex;
-gap: 3%;
-padding: 2%;
-
+.whyPPDiv {
+  width: 50%;
+  display: flex;
+  gap: 3%;
+  padding: 2%;
 }
 
-.whyPPImage{
+.whyPPImage {
   width: 100%;
   height: 200px;
   border-radius: 15px;
@@ -79,7 +76,7 @@ padding: 2%;
   justify-content: center;
 }
 
-.whyPPText{
+.whyPPText {
   width: 100%;
   margin-top: 4%;
 }

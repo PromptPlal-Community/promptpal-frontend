@@ -4,7 +4,7 @@ import {
   FaLinkedin,
   FaXTwitter,
 } from "react-icons/fa6";
-import CFooter from "../layout/CFooter";
+import CFooter from "./CFooter";
 import CTA from "./CTA";
 
 function Footer() {
