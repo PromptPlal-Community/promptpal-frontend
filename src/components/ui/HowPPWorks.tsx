@@ -1,3 +1,8 @@
+import HowPPWorksCard from "../reusables/cards/HowPPWorksCard";
+import createPromptImage from "../../assets/images/create-prompt.png";
+import refineImage from "../../assets/images/refine.png";
+import testImage from "../../assets/images/test.png";
+import shareImage from "../../assets/images/share.png";
 import { FaArrowRight } from "react-icons/fa";
 
 function HowPPWorks() {
@@ -11,81 +16,57 @@ function HowPPWorks() {
         <div className="text text-lg">
           <p>
             PromptPal comes packed with powerful features to help you create,
-            refine, and manage prompts with ease, whether you’re working solo or
+            refine, and manage prompts with ease, whether you're working solo or
             collaborating with a team.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-4 gap-8 mt-12">
+        <div className="flex flex-row gap-3 items-center justify-center mt-10">
           {/* Step 1 */}
+          <HowPPWorksCard
+            stepNumber={1}
+            title="Select or create a prompt"
+            description="Choose from PromptPal's curated templates or start fresh with your own idea."
+            imagePlaceholder={createPromptImage}
+            altPlaceholder="Create prompt interface"
+          />
 
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-bold text-lg mb-1">
-                Select or create a prompt
-              </h3>
-              <p className="text-gray-600 text-sm mb-2">
-                Choose from PromptPal’s curated templates or start fresh with
-                your own idea.
-              </p>
-
-              <div className="bg-gray-300 h-32 rounded-lg flex items-center justify-center">
-                <span className="text-[#270450] font-bold"> Image</span>
-              </div>
-            </div>
-            <p className="mx-1">
-              <FaArrowRight />
-            </p>
-          </div>
+          <p className="mx-1">
+            <FaArrowRight />
+           </p>
 
           {/* Step 2 */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-bold text-lg mb-1">Refine & Tailor</h3>
-              <p className="text-gray-600 text-sm mb-2">
-                Adjust tone, style, and clarity using smart refinement tools.
-              </p>
-
-              <div className="bg-gray-300 h-32 rounded-lg flex items-center justify-center">
-                <span className="text-[#270450] font-bold"> Image</span>
-              </div>
-            </div>
-            <p className="mx-1">
-              <FaArrowRight />
-            </p>
-          </div>
-
+          <HowPPWorksCard
+            stepNumber={2}
+            title="Refine & Tailor"
+            description="Run variations and compare outputs to find the best-performing prompt."
+            imagePlaceholder={refineImage}
+            altPlaceholder="Refinement tools"
+          />
+          <p className="mx-1">
+            <FaArrowRight />
+           </p>
           {/* Step 3 */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-bold text-lg mb-1">Test & Compare</h3>
-              <p className="text-gray-600 text-sm mb-2">
-                Run variations and compare outputs to find the best-performing
-                prompt.
-              </p>
-
-              <div className="bg-gray-300 h-32 rounded-lg flex items-center justify-center">
-                <span className="text-[#270450] font-bold"> Image</span>
-              </div>
-            </div>
-            <p className="mx-1">
-              <FaArrowRight />
-            </p>
-          </div>
+          <HowPPWorksCard
+            stepNumber={3}
+            title="Test & Compare"
+            description="Adjust tone, style, and clarity using smart refinement tools."
+            imagePlaceholder={testImage}
+            altPlaceholder="Testing interface"
+          />
+          <p className="mx-1">
+            <FaArrowRight />
+           </p>
 
           {/* Step 4 */}
-          <div>
-            <div>
-              <h3 className="font-bold text-lg mb-1">Use & Share</h3>
-              <p className="text-gray-600 text-sm mb-2">
-                Save, export, or collaborate with your team for future use.
-              </p>
-
-              <div className="bg-gray-300 h-32 rounded-lg flex items-center justify-center">
-                <span className="text-[#270450] font-bold"> Image</span>
-              </div>
-            </div>
-          </div>
+          <HowPPWorksCard
+            stepNumber={4}
+            title="Use & Share"
+            description="Save, export, or collaborate with your team for future use."
+            imagePlaceholder={shareImage}
+            altPlaceholder="Sharing options"
+            showArrow={false}
+          />
         </div>
       </div>
     </section>

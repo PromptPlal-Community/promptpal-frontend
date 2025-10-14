@@ -8,10 +8,12 @@ import WhoUses from "../ui/WhoUses";
 import Users from "../ui/Users";
 import PricingPlan from "../ui/PricingPlan";
 import Footer from "../ui/Footer";
+import Navbar from "./Navbar";
 
 function Home() {
   return (
     <>
+      <Navbar/>
       <LandingPage />
       <About />
       <Features />

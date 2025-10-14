@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import promptPalLogo from '../../../public/prompt-pal-logo.png'
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,7 +14,11 @@ function Navbar() {
           className="text-2xl font-bold 
         text-[#270450]/90 "
         >
-          PromptPal
+          <img
+            src={promptPalLogo}
+            alt="Prompt-Pal Logo"
+            className="rounded-lg w-full h-auto max-w-md mx-auto"
+          />
         </Link>
 
         {/* Desktop Menu */}

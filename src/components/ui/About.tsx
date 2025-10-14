@@ -1,3 +1,6 @@
+import generateAIPromptImage from "../../assets/images/generate-image.png"
+
+
 function About() {
   return (
     <section className="py-16 bg-white text-gray-800">
@@ -39,8 +42,13 @@ function About() {
         </div>
 
         {/* Placeholder Image */}
-        <div className="bg-gray-300 rounded-lg h-64 md:h-80 flex items-center justify-center">
-          <span className="text-[#270450] font-bold">Image</span>
+        <div className="bg-gray-300 rounded-lg w-130 h-64 md:h-80 flex items-center justify-center">
+          <img
+          src={generateAIPromptImage}
+          alt="Generate AI Prompt"
+          className="flex h-80 w-110"
+          
+          />
         </div>
       </div>
     </section>

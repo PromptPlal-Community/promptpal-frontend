@@ -1,12 +1,18 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
+import loginBanner from "../../assets/images/login-banner.png"
 
 function EmailSuccess() {
   return (
     <section className="flex flex-col md:flex-row min-h-screen">
-      <div className="md:w-2/5 w-full bg-[#270450]/90 flex items-center justify-center">
-        image
+      {/* Image Section */}
+      <div className="hidden md:flex md:w-2/5 bg-white items-center justify-center p-0 overflow-hidden">
+        <img
+          src={loginBanner}
+          alt="AI Prompt Library Illustration"
+          className="w-full h-full object-cover min-h-screen"
+        />
       </div>
 
       <div className="md:w-3/5 w-full mt-15 flex flex-col items-center justify-center">

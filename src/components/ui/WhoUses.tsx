@@ -1,6 +1,13 @@
+import contentCreatorImage from "../../assets/images/content-creator.png"
+import designerImage from "../../assets/images/designer.png"
+import marketingImage from "../../assets/images/marketing.png"
+import developerImage from "../../assets/images/developer.png"
+
+
+
 function WhoUses() {
   return (
-    <section className="w-full bg-white py-12 px-6 lg:px-20">
+    <section className="w-full py-12 px-6 lg:px-20">
       {/* Title */}
       <div className=" width mb-12">
         <h2 className="text-3xl lg:text-4xl heading font-bold text-[#270450] mb-4">
@@ -15,9 +22,11 @@ function WhoUses() {
 
       <div className=" mt-8 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
         {/* Card 1 */}
-        <div className="bg-gray-50 rounded-2xl shadow-sm p-6 flex flex-col items-center">
+        <div className="p-6 flex flex-col items-center">
           <div className="w-full h-40 bg-gray-200 rounded-xl mb-6 flex items-center justify-center">
-            <span className="text-gray-500">Image</span>
+            <img src={contentCreatorImage} alt="save time with prompt-pal"
+              className="h-50 w-full"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
@@ -31,9 +40,11 @@ function WhoUses() {
         </div>
 
         {/* Card 2 */}
-        <div className="bg-gray-50 rounded-2xl shadow-sm p-6 flex flex-col items-center">
+        <div className=" p-6 flex flex-col items-center">
           <div className="w-full h-40 bg-gray-200 rounded-xl mb-6 flex items-center justify-center">
-            <span className="text-gray-500"> Image</span>
+            <img src={designerImage} alt="save time with prompt-pal"
+              className="h-50 w-full"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
@@ -47,9 +58,11 @@ function WhoUses() {
         </div>
 
         {/* Card 3 */}
-        <div className="bg-gray-50 rounded-2xl shadow-sm p-6 flex flex-col items-center">
+        <div className=" p-6 flex flex-col items-center">
           <div className="w-full h-40 bg-gray-200 rounded-xl mb-6 flex items-center justify-center">
-            <span className="text-gray-500">Image</span>
+            <img src={marketingImage} alt="save time with prompt-pal"
+              className="h-50 w-full"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
@@ -63,9 +76,11 @@ function WhoUses() {
         </div>
 
         {/* Card 4 */}
-        <div className="bg-gray-50 rounded-2xl shadow-sm p-6 flex flex-col items-center">
+        <div className=" p-6 flex flex-col items-center">
           <div className="w-full h-40 bg-gray-200 rounded-xl mb-6 flex items-center justify-center">
-            <span className="text-gray-500">Image</span>
+            <img src={developerImage} alt="save time with prompt-pal"
+              className="h-50 w-full"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
