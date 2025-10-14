@@ -1,6 +1,4 @@
-import React from 'react';
 
-// Define the prop types for the component
 interface FeatureCardProps {
   imageUrl: string;
   imageAlt: string;

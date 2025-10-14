@@ -1,4 +1,3 @@
-import React from 'react';
 import FeatureItem from '../reusables/cards/feature/FeatureItem';
 
 // Import images - adjust paths according to your project structure
