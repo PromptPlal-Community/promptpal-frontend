@@ -60,7 +60,7 @@ const Register: React.FC = () => {
     <>
       <section className="flex flex-col lg:flex-row min-h-screen bg-white ">
         {/* Image Section - Better sizing for desktop */}
-        <div className=" lg:w-3/5 w-full bg-white hidden flex lg:flex items-center justify-center overflow-hidden pw-10">
+        <div className=" lg:w-3/5 w-full bg-white hidden lg:flex items-center justify-center overflow-hidden pw-10">
             <img
               src={loginBanner}
               alt="AI Prompt Library Illustration"
@@ -79,7 +79,7 @@ const Register: React.FC = () => {
           />
           
           <div className="w-full max-w-sm lg:max-w-md mx-auto">
-          <div className="mt-6 text-end mt-5 mb-5">
+          <div className="mt-6 text-end mb-5">
                 <p className="text-gray-600 text-sm">
                   Already have an account?{" "}
                   <Link 

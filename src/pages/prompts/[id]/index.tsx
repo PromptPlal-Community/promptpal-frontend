@@ -92,7 +92,7 @@ const getIconFromPrompt = (prompt: Prompt) => {
 const PromptDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { prompts, loading, upvotePrompt, favoritePrompt } = usePrompts();
+  const { prompts, loading, upvotePrompt, favoritePrompt } = usePrompts(); // Removed unused 'error'
   const [prompt, setPrompt] = useState<Prompt | null>(null);
   const [copied, setCopied] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -117,39 +117,33 @@ const PromptDetailsPage: React.FC = () => {
 
   const handleUpvote = async () => {
     if (prompt) {
-      try {
+
         await upvotePrompt(prompt._id);
         toast.success('Prompt upvoted!');
-      } catch (error) {
-        toast.error('Failed to upvote prompt');
-      }
+
     }
   };
 
-  const handleFavorite = async () => {
-    if (prompt) {
-      try {
-        await favoritePrompt(prompt._id);
-        toast.success('Prompt added to favorites!');
-      } catch (error) {
-        toast.error('Failed to favorite prompt');
-      }
-    }
-  };
+const handleFavorite = async () => {
+  if (prompt) {
+ 
+      await favoritePrompt(prompt._id);
+      toast.success('Prompt added to favorites!');
+    
+  }
+};
 
   const handleShare = async () => {
     if (prompt) {
       const shareUrl = `${window.location.origin}/prompts/${prompt._id}`;
       if (navigator.share) {
-        try {
+
           await navigator.share({
             title: prompt.title,
             text: prompt.description,
             url: shareUrl,
           });
-        } catch (error) {
-          // Share failed or was cancelled
-        }
+
       } else {
         await navigator.clipboard.writeText(shareUrl);
         toast.success('Link copied to clipboard!');
@@ -270,7 +264,7 @@ const PromptDetailsPage: React.FC = () => {
         </div>
       </div>
 
-      <Grid cols={1} lgCols={3} gap={6}>
+      <Grid >
         {/* Main Content - 2/3 width */}
         <div className="lg:col-span-2 space-y-6">
           {/* Prompt Content */}
@@ -439,8 +433,8 @@ const PromptDetailsPage: React.FC = () => {
                 <div>
                   <div className="font-semibold text-gray-900">{prompt.author.username}</div>
                   <div className="text-sm text-gray-600 capitalize">{prompt.author.level}</div>
-                  {prompt.author.profession && (
-                    <div className="text-sm text-gray-500">{prompt.author.profession}</div>
+                  {prompt.author && (
+                    <div className="text-sm text-gray-500">{prompt._id}</div>
                   )}
                 </div>
               </div>
@@ -469,7 +463,7 @@ const PromptDetailsPage: React.FC = () => {
                 {prompt.community && (
                   <div className="flex items-center gap-2 text-sm">
                     <ExternalLink className="w-4 h-4 text-gray-400" />
-                    <span>Community: {prompt.community}</span>
+                    <span>Community: </span>
                   </div>
                 )}
               </div>

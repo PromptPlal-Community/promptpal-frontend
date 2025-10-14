@@ -13,7 +13,6 @@ const RecentPrompts: React.FC<RecentPromptsProps> = () => {
 
   // Fetch prompts when component mounts - use empty dependency array
   useEffect(() => {
-    console.log('RecentPrompts: Fetching prompts...');
     fetchPrompts({
       limit: 3,
       sortBy: 'createdAt',
@@ -46,7 +45,6 @@ const RecentPrompts: React.FC<RecentPromptsProps> = () => {
   }
 
   if (error) {
-    console.log('RecentPrompts: Showing error state:', error);
     return (
       <div className="lg:col-span-2 shadow rounded-lg p-5 bg-white">
         <h2 className="text-lg font-bold text-gray-700 mb-3">Recent Prompts</h2>

@@ -170,8 +170,8 @@ interface PromptCardProps {
 export default function PromptCard({ 
   prompt, 
   onLike, 
-  onBookmark, 
-  onDownload,
+  // onBookmark, 
+  // onDownload,
   className = "" 
 }: PromptCardProps) {
   // Use the helper function to safely get color scheme
@@ -185,17 +185,17 @@ export default function PromptCard({
     onLike?.(prompt._id);
   };
 
-  const handleBookmark = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onBookmark?.(prompt._id);
-  };
+  // const handleBookmark = (e: React.MouseEvent) => {
+  //   e.preventDefault();
+  //   e.stopPropagation();
+  //   onBookmark?.(prompt._id);
+  // };
 
-  const handleDownload = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onDownload?.(prompt._id);
-  };
+  // const handleDownload = (e: React.MouseEvent) => {
+  //   e.preventDefault();
+  //   e.stopPropagation();
+  //   onDownload?.(prompt._id);
+  // };
 
   // Format category name for display
   const formatCategory = (category: string) => {
