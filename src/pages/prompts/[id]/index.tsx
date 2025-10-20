@@ -346,9 +346,24 @@ const handleFavorite = async () => {
                       {prompt.category}
                     </span>
                   </div>
-                  <div className="bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-semibold">
-                    {prompt.aiTool}
-                  </div>
+                <div className="bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-semibold">
+
+          {prompt.aiTool.length > 0 && (
+            <>
+              <h3 className="font-semibold text-gray-900 mb-3">AI Tools</h3>
+              <div className="flex flex-wrap gap-2">
+                {prompt.aiTool.map((aiTool, index) => (
+                  <span
+                    key={index}
+                    className={`${colorScheme.badge} ${colorScheme.text} px-3 py-1.5 rounded-lg text-sm font-medium capitalize`}
+                  >
+                    {aiTool}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
+                </div>
                 </div>
 
                 {/* Difficulty and Level */}

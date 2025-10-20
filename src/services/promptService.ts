@@ -1,7 +1,6 @@
 import axios from 'axios';
 import type { 
-  Prompt, 
-  UpdatePromptData, 
+  Prompt,  
   DashboardStats, 
   PaginatedResponse,
   PromptFilters 
@@ -124,8 +123,9 @@ createPrompt: async (formData: FormData): Promise<Prompt> => {
   return response.data;
 },
 
+
   // Update prompt
-  updatePrompt: async (id: string, updateData: UpdatePromptData, images?: File[]): Promise<Prompt> => {
+  updatePrompt: async (id: string, updateData: FormData, images?: File[]): Promise<Prompt> => {
     const formData = new FormData();
     
     // Append update data as individual fields (not as JSON)
@@ -158,10 +158,27 @@ createPrompt: async (formData: FormData): Promise<Prompt> => {
     return response.data;
   },
 
-  // Delete prompt
-  deletePrompt: async (id: string): Promise<void> => {
-    await promptApi.delete(`/prompts/${id}`);
-  },
+// Delete prompt
+deletePrompt: async (id: string): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response = await promptApi.delete(`/prompts/${id}`);
+    console.log('Delete response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Delete prompt service error:', error);
+    if (axios.isAxiosError(error)) {
+      console.error('Error response data:', error.response?.data);
+      const message =
+        (error.response?.data && ((error.response.data).message || (error.response.data).error)) ||
+        error.message ||
+        'Failed to delete prompt';
+      throw new Error(message);
+    } else {
+      console.error('Non-Axios error:', error);
+      throw new Error((error as Error)?.message || 'Failed to delete prompt');
+    }
+  }
+},
 
   // Search prompts
   searchPrompts: async (query: string, filters: PromptFilters = {}): Promise<PaginatedResponse<Prompt>> => {
@@ -220,23 +237,26 @@ export const dashboardService = {
       const userPrompts = userPromptsResponse.prompts || [];
       const pagination = userPromptsResponse.pagination || { totalRecords: userPrompts.length };
 
+      // Use safe access with optional chaining and default values
       const stats = {
         totalPrompts: pagination.totalRecords,
         totalViews: userPrompts.reduce((sum: number, prompt: Prompt) => sum + (prompt.views || 0), 0),
         totalUpvotes: userPrompts.reduce((sum: number, prompt: Prompt) => sum + (prompt.upvotes || 0), 0),
         totalDownloads: userPrompts.reduce((sum: number, prompt: Prompt) => sum + (prompt.downloads || 0), 0),
-        averageRating: userPrompts.length > 0 
+        averageRating: userPrompts.length > 0
           ? userPrompts.reduce((sum: number, prompt: Prompt) => sum + (prompt.rating?.average || 0), 0) / userPrompts.length
           : 0
       };
 
       const categoryStats = userPrompts.reduce((acc: Record<string, { count: number; totalViews: number }>, prompt: Prompt) => {
-        const category = prompt.category;
+        // Try multiple possible property locations for category
+        const category = prompt.category || 'Uncategorized';
         if (!acc[category]) {
           acc[category] = { count: 0, totalViews: 0 };
         }
         acc[category].count++;
-        acc[category].totalViews += (prompt.views || 0);
+        // Try multiple possible property locations for views
+        acc[category].totalViews += (prompt.views || prompt.views || 0);
         return acc;
       }, {});
 
@@ -269,5 +289,4 @@ export const dashboardService = {
     }
   },
 };
-
 export default promptService;

@@ -1,8 +1,20 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import passwordBanner from "../../assets/images/password.png"
+import { useEffect, useState } from "react";
 
 
 function PasswordVerification() {
+    const [email, setEmail] = useState<string>("");
+  
+  const location = useLocation();
+
+  // Get email from navigation state or use a default
+  useEffect(() => {
+    if (location.state?.email) {
+      setEmail(location.state.email);
+    }
+  }, [location.state]);
+
   return (
     <section className="flex flex-col md:flex-row min-h-screen">
       {/* Image Section */}
@@ -20,7 +32,7 @@ function PasswordVerification() {
             Email Confirmation
           </h2>
           <p className="text-gray-800 mb-6">
-            Check your inbox we have sent a password reset link to [email]
+            Check your inbox we have sent a password reset link to {email}
           </p>
 
           <Link
@@ -33,7 +45,7 @@ function PasswordVerification() {
 
           <p className="text-gray-800 mt-6">
             Didn't receive the email{" "}
-            <Link to="/" className="text-[#270450] font-semibold underline">
+            <Link to="/forgotpassword" className="text-[#270450] font-semibold underline">
               resend
             </Link>
           </p>

@@ -1,8 +1,6 @@
 import "./index.css";
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
-
 import Home from "./components/layout/Home";
 import Login from "./components/auths/Login";
 import Register from "./components/auths/Register";
@@ -16,20 +14,13 @@ import CTrending from "./components/sections/CTrending";
 
 import DashboardRouter from "./pages/DashboardRouter";
 import PromptDetailsPage from "./pages/prompts/[id]";
+import { MessageProvider } from "./hooks/MessageProvider";
+import GoogleAuthCallback from "./components/auths/GoogleAuthCallback";
 
 function App() {
   return (
     <>
-      <Toaster 
-        position="top-right"
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: '#363636',
-            color: '#fff',
-          },
-        }}
-      />
+      <MessageProvider>
       <Routes>
         {/* Landing Page */}
         <Route path="/" element={<Home />} />
@@ -41,7 +32,7 @@ function App() {
         <Route path="/success" element={<EmailSuccess />} />
         <Route path="/forgotpassword" element={<ForgotPassword />} />
         <Route path="/passwordverify" element={<PasswordVerification />} />
-        <Route path="/passwordupdate" element={<PasswordUpdate />} />
+        <Route path="/reset-password" element={<PasswordUpdate />} />
         <Route path="/passwordsuccess" element={<PasswordSuccess />} />
 
         {/* Other Pages */}
@@ -50,8 +41,10 @@ function App() {
         {/* Dashboard Routes */}
         <Route path="/dashboard/*" element={<DashboardRouter />} />
         <Route path="/dashboard/prompts/:id" element={<PromptDetailsPage />} />
-
+        <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
+        <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
+      </MessageProvider>
     </>
   );
 }

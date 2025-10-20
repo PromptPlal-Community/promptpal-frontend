@@ -74,14 +74,15 @@ const getColorScheme = (category: string) => {
 interface PromptForIcon {
   title: string;
   category: string;
-  aiTool: string;
+  aiTool: string[];
 }
 
 // Icon mapping based on title and category keywords
 const getIconFromPrompt = (prompt: PromptForIcon) => {
   const lowerTitle = prompt.title.toLowerCase();
   const category = prompt.category.toLowerCase();
-  const aiTool = prompt.aiTool.toLowerCase();
+  const aiTool = prompt.aiTool.map(t => t.toLowerCase());
+
 
   // Check title keywords first
   if (lowerTitle.includes('react') || lowerTitle.includes('component') || lowerTitle.includes('javascript') || lowerTitle.includes('typescript')) {

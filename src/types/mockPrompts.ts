@@ -8,7 +8,7 @@ export const mockPrompts: Prompt[] = [
     promptText: 'Generate comprehensive documentation for the following React component...',
     resultText: '# Button Component ##\n\nDescription A reusable button component with multiple variants and sizes. ## Props - variant: primary | secondary | outline - size: sm | md | lg - disabled: boolean',
     images: [],
-    aiTool: 'ChatGPT',
+    aiTool: ['ChatGPT'],
     tags: ['react', 'documentation', 'components', 'typescript'],
     author: {
       _id: '1',
@@ -49,7 +49,7 @@ export const mockPrompts: Prompt[] = [
     promptText: 'Please provide a detailed critique of the following UI/UX design...',
     resultText: 'Receive detailed insights on layout, color choices, usability, and flow—highlighting strengths, weaknesses, and practical improvements for a more user-friendly experience.',
     images: [],
-    aiTool: 'Midjourney',
+    aiTool: ['Midjourney'],
     tags: ['ui-ux', 'critique', 'design', 'feedback'],
     author: {
       _id: '2',
@@ -90,7 +90,7 @@ export const mockPrompts: Prompt[] = [
     promptText: 'Generate creative writing prompts...',
     resultText: 'AI reviews your drafts to refine storytelling, polish language, and suggest improvements that make your writing more engaging and impactful.',
     images: [],
-    aiTool: 'Claude',
+    aiTool: ['Claude'],
     tags: ['creative', 'story', 'telling', 'fiction'],
     author: {
       _id: '3',
@@ -131,7 +131,7 @@ export const mockPrompts: Prompt[] = [
     promptText: 'Write a comprehensive blog post about [TOPIC]...',
     resultText: '# Button Component ##\n\nDescription A reusable button component with multiple variants and sizes. ## Props - variant: primary | secondary | outline - size: sm | md | lg - disabled: boolean',
     images: [],
-    aiTool: 'ChatGPT',
+    aiTool: ['ChatGPT'],
     tags: ['writing', 'blog', 'content', 'seo'],
     author: {
       _id: '1',
@@ -172,7 +172,7 @@ export const mockPrompts: Prompt[] = [
     promptText: 'Create an engaging short story with the following elements...',
     resultText: 'AI reviews your drafts to refine storytelling, polish language, and suggest improvements that make your writing more engaging and impactful.',
     images: [],
-    aiTool: 'Claude',
+    aiTool: ['Claude'],
     tags: ['creative', 'story', 'fiction', 'narrative'],
     author: {
       _id: '3',
@@ -213,7 +213,7 @@ export const mockPrompts: Prompt[] = [
     promptText: 'Review the following code for best practices...',
     resultText: 'Receive detailed insights on layout, color choices, usability, and flow—highlighting strengths, weaknesses, and practical improvements for a more user-friendly experience.',
     images: [],
-    aiTool: 'ChatGPT',
+    aiTool: ['ChatGPT'],
     tags: ['code', 'review', 'debugging', 'optimization'],
     author: {
       _id: '2',

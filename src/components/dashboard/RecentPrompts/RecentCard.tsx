@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { 
   Download, 
   Eye, 
@@ -17,7 +17,9 @@ import {
   BarChart3,
   Languages,
   Edit3,
-  CheckCircle
+  Archive,
+  Send,
+  Trash2 // Added Trash2 icon
 } from 'lucide-react';
 import type { Prompt } from '../../../types/prompt';
 
@@ -76,14 +78,15 @@ const getColorScheme = (category: string) => {
 interface PromptForIcon {
   title: string;
   category: string;
-  aiTool: string;
+  aiTool: string[];
 }
 
 // Icon mapping based on title and category keywords
 const getIconFromPrompt = (prompt: PromptForIcon) => {
   const lowerTitle = prompt.title.toLowerCase();
   const category = prompt.category.toLowerCase();
-  const aiTool = prompt.aiTool.toLowerCase();
+  const aiTool = prompt.aiTool.map(t => t.toLowerCase());
+
 
   // Check title keywords first
   if (lowerTitle.includes('react') || lowerTitle.includes('component') || lowerTitle.includes('javascript') || lowerTitle.includes('typescript')) {
@@ -165,6 +168,8 @@ interface RecentCardProps {
   prompt: Prompt;
   onPublish?: (id: string) => void;
   onEdit?: (id: string) => void;
+  onUnpublish?: (id: string) => void;
+  onDelete?: (id: string) => void; // Added delete prop
   className?: string;
 }
 
@@ -172,10 +177,13 @@ export default function RecentCard({
   prompt, 
   onPublish, 
   onEdit,
+  onUnpublish,
+  onDelete, // Added onDelete prop
   className = "" 
 }: RecentCardProps) {
   // Use the helper function to safely get color scheme
   const colorScheme = getColorScheme(prompt.category);
+  const navigate = useNavigate();
 
   const icon = getIconFromPrompt(prompt);
 
@@ -189,6 +197,21 @@ export default function RecentCard({
     e.preventDefault();
     e.stopPropagation();
     onEdit?.(prompt._id);
+    if (!onEdit) {
+      navigate(`/dashboard/prompts/edit/${prompt._id}`);
+    }
+  };
+
+  const handleUnpublish = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onUnpublish?.(prompt._id);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDelete?.(prompt._id);
   };
 
   // Format category name for display
@@ -200,6 +223,7 @@ export default function RecentCard({
 
   // Check if prompt is published or draft
   const isPublished = prompt.isPublic === true && prompt.isDraft === false;
+  const isDraft = prompt.isDraft === true;
 
   return (
     <Link 
@@ -220,61 +244,131 @@ export default function RecentCard({
         </div>
 
         <div className="flex w-full flex-row">
-        <div className="w-70">
-        {/* Title */}
-        <h3 className={`text-xl font-bold ${colorScheme.text} mb-3 group-hover:opacity-80 transition-colors line-clamp-2`}>
-          {prompt.title}
-        </h3>
-        </div>        
+          <div className="w-70">
+            {/* Title */}
+            <h3 className={`text-xl font-bold ${colorScheme.text} mb-3 group-hover:opacity-80 transition-colors line-clamp-2`}>
+              {prompt.title}
+            </h3>
+          </div>        
           <div className="flex flex-row gap-1 items-end justify-end w-full">
-            {/* Draft/Published Status Badge */}
-            <div className={` px-2 py-1 bg- rounded-md text-xs font-medium ${colorScheme.text} ${colorScheme.btn}`}>
-              {isPublished ? 'Published' : 'Draft'}
+            {/* Status Badge */}
+            <div className={`px-2 py-1 rounded-md text-xs font-medium ${
+              isPublished 
+                ? 'bg-green-100 text-green-800 border border-green-200' 
+                : isDraft 
+                  ? 'bg-yellow-100 text-yellow-800 border border-yellow-200'
+                  : 'bg-gray-100 text-gray-800 border border-gray-200'
+            }`}>
+              {isPublished ? 'Published' : isDraft ? 'Draft' : 'Archived'}
             </div>
             
-            {/* Edit button for drafts */}
-            {!isPublished && onEdit && (
-              <button
-                onClick={handleEdit}
-                className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors duration-200 rounded-lg hover:bg-white/50"
-                title="Edit prompt"
-              >
-                <Edit3 className="w-4 h-4" />
-              </button>
-            )}
-            
-            {/* Publish button for drafts */}
-            {!isPublished && onPublish && (
-              <button
-                onClick={handlePublish}
-                className="p-1.5 text-gray-400 hover:text-green-500 transition-colors duration-200 rounded-lg hover:bg-white/50"
-                title="Publish prompt"
-              >
-                <CheckCircle className="w-4 h-4" />
-              </button>
-            )}
+            {/* Action Buttons */}
+            <div className="flex gap-1">
+              {/* Edit button - available for both drafts and published prompts */}
+              {onEdit && (
+                <button
+                  onClick={handleEdit}
+                  className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors duration-200 rounded-lg hover:bg-white/50"
+                  title={isPublished ? "Edit published prompt" : "Edit draft"}
+                >
+                  <Edit3 className="w-4 h-4" />
+                </button>
+              )}
+              
+              {/* Publish button for drafts */}
+              {isDraft && onPublish && (
+                <button
+                  onClick={handlePublish}
+                  className="p-1.5 text-gray-400 hover:text-green-500 transition-colors duration-200 rounded-lg hover:bg-white/50"
+                  title="Publish prompt"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              )}
+              
+              {/* Unpublish button for published prompts */}
+              {isPublished && onUnpublish && (
+                <button
+                  onClick={handleUnpublish}
+                  className="p-1.5 text-gray-400 hover:text-orange-500 transition-colors duration-200 rounded-lg hover:bg-white/50"
+                  title="Unpublish and move to drafts"
+                >
+                  <Archive className="w-4 h-4" />
+                </button>
+              )}
+              
+              {/* Delete button for all prompts */}
+              {onDelete && (
+                <button
+                  onClick={handleDelete}
+                  className="p-1.5 text-gray-400 hover:text-red-500 transition-colors duration-200 rounded-lg hover:bg-white/50"
+                  title="Delete prompt"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Stats and Author */}
-        {isPublished && (
-          <div className="flex items-center justify-between pt-4 border-t border-gray-200/50 mt-auto">
-          <div className="flex items-center gap-4 text-sm text-gray-600">
-            <div className="flex items-center gap-1.5 font-medium">
-              <Download className="w-4 h-4" />
-              <span>{prompt.downloads || 0}</span>
-            </div>
-            <div className="flex items-center gap-1.5 font-medium">
-              <Eye className="w-4 h-4" />
-              <span>{prompt.views || 0}</span>
-            </div>
-            <div className="flex items-center gap-1.5 font-medium">
-              <Star className="w-4 h-4 text-yellow-500" />
-              <span>{(prompt.rating?.average || 0).toFixed(1)}</span>
-            </div>
-          </div>
-        </div>
+        {/* Description (if available) */}
+        {prompt.description && (
+          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+            {prompt.description}
+          </p>
         )}
+
+        {/* AI Tools */}
+        {prompt.aiTool && prompt.aiTool.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-4">
+            {prompt.aiTool.slice(0, 3).map((tool, index) => (
+              <span
+                key={index}
+                className="px-2 py-1 bg-white/70 text-gray-700 text-xs rounded-md border border-gray-200"
+              >
+                {tool}
+              </span>
+            ))}
+            {prompt.aiTool.length > 3 && (
+              <span className="px-2 py-1 bg-white/70 text-gray-500 text-xs rounded-md border border-gray-200">
+                +{prompt.aiTool.length - 3} more
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Stats and Author */}
+        <div className="flex items-center justify-between pt-4 border-t border-gray-200/50 mt-auto">
+          <div className="flex items-center gap-4 text-sm text-gray-600">
+            {isPublished ? (
+              <>
+                <div className="flex items-center gap-1.5 font-medium">
+                  <Download className="w-4 h-4" />
+                  <span>{prompt.downloads || 0}</span>
+                </div>
+                <div className="flex items-center gap-1.5 font-medium">
+                  <Eye className="w-4 h-4" />
+                  <span>{prompt.views || 0}</span>
+                </div>
+                <div className="flex items-center gap-1.5 font-medium">
+                  <Star className="w-4 h-4 text-yellow-500" />
+                  <span>{(prompt.rating?.average || 0).toFixed(1)}</span>
+                </div>
+              </>
+            ) : (
+              <div className="text-xs text-gray-500">
+                Last updated: {new Date(prompt.updatedAt || prompt.createdAt).toLocaleDateString()}
+              </div>
+            )}
+          </div>
+          
+          {/* Version badge for published prompts */}
+          {isPublished && prompt.version && (
+            <div className="text-xs text-gray-500 bg-white/50 px-2 py-1 rounded border border-gray-200">
+              v{prompt.version}
+            </div>
+          )}
+        </div>
       </div>
     </Link>
   );

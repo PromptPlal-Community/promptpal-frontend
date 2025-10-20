@@ -23,7 +23,7 @@ import type { Prompt } from '../../../types/prompt';
 
 // Define the type for category colors
 type CategoryColorKey = 
-  | 'Coding' 
+  | 'Code' 
   | 'Design' 
   | 'Writing' 
   | 'Development' 
@@ -42,7 +42,7 @@ type CategoryColors = {
 };
 
 const categoryColors: CategoryColors = {
-  Coding: { bg: 'bg-violet-50', text: 'text-violet-900', badge: 'bg-violet-100' },
+  Code: { bg: 'bg-violet-50', text: 'text-violet-900', badge: 'bg-violet-100' },
   Design: { bg: 'bg-amber-50', text: 'text-amber-900', badge: 'bg-amber-100' },
   Writing: { bg: 'bg-emerald-50', text: 'text-emerald-900', badge: 'bg-emerald-100' },
   Development: { bg: 'bg-blue-50', text: 'text-blue-900', badge: 'bg-blue-100' },
@@ -74,17 +74,18 @@ const getColorScheme = (category: string) => {
 interface PromptForIcon {
   title: string;
   category: string;
-  aiTool: string;
+  aiTool: string[];
 }
 
 // Icon mapping based on title and category keywords
 const getIconFromPrompt = (prompt: PromptForIcon) => {
   const lowerTitle = prompt.title.toLowerCase();
   const category = prompt.category.toLowerCase();
-  const aiTool = prompt.aiTool.toLowerCase();
+  const aiTool = prompt.aiTool.map(t => t.toLowerCase());
+
 
   // Check title keywords first
-  if (lowerTitle.includes('react') || lowerTitle.includes('component') || lowerTitle.includes('javascript') || lowerTitle.includes('typescript')) {
+  if (lowerTitle.includes('coding') || lowerTitle.includes('code') || lowerTitle.includes('react') || lowerTitle.includes('component') || lowerTitle.includes('javascript') || lowerTitle.includes('typescript')) {
     return <Code className="w-4 h-4" />;
   }
   if (lowerTitle.includes('design') || lowerTitle.includes('ui') || lowerTitle.includes('ux') || lowerTitle.includes('figma')) {
@@ -125,7 +126,7 @@ const getIconFromPrompt = (prompt: PromptForIcon) => {
   }
 
   // Check category
-  if (category.includes('coding') || category.includes('development')) {
+  if (category.includes('coding') || category.includes('code') || category.includes('development')) {
     return <Code className="w-4 h-4" />;
   }
   if (category.includes('design')) {
@@ -227,7 +228,7 @@ export default function PromptCard({
 
   return (
     <Link 
-      to={`/prompts/${prompt._id}`}
+      to={`/dashboard/prompts/${prompt._id}`}
       className={`${colorScheme.bg} rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 flex flex-col h-full group cursor-pointer ${className}`}
     >
       <div className="p-5 flex-1 flex flex-col">

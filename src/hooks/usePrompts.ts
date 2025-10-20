@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { promptService, dashboardService } from '../services/promptService';
-import type { Prompt, UpdatePromptData, DashboardStats, PromptFilters } from '../types/prompt';
+import type { Prompt, DashboardStats, PromptFilters } from '../types/prompt';
 
 // Define a proper error type for axios errors
 interface AxiosError {
@@ -79,7 +79,7 @@ export const usePrompts = (filters: PromptFilters = {}) => {
     }
   };
 
-  const updatePrompt = async (id: string, updateData: UpdatePromptData, images?: File[]): Promise<Prompt> => {
+  const updatePrompt = async (id: string, updateData: FormData, images?: File[]): Promise<Prompt> => {
     try {
       const updatedPrompt = await promptService.updatePrompt(id, updateData, images);
       setPrompts(prev => prev.map(prompt => 
@@ -92,11 +92,20 @@ export const usePrompts = (filters: PromptFilters = {}) => {
   };
 
   const deletePrompt = async (id: string): Promise<void> => {
+    console.log('Deleting prompt with id:', id);
     try {
       await promptService.deletePrompt(id);
       setPrompts(prev => prev.filter(prompt => prompt._id !== id));
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to delete prompt');
+    }
+  };
+
+  const incrementPromptViews = async (id: string): Promise<void> => {
+    try {
+      await promptService.incrementPromptViews(id);
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to increment prompt views');
     }
   };
 
@@ -119,6 +128,14 @@ export const usePrompts = (filters: PromptFilters = {}) => {
     }
   };
 
+  const getPromptById = async (id: string): Promise<Prompt | undefined> => {
+    try {
+      return await promptService.getPromptById(id);
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Failed to get prompt by ID');
+    }
+  };
+
   return {
     prompts,
     loading,
@@ -130,6 +147,8 @@ export const usePrompts = (filters: PromptFilters = {}) => {
     deletePrompt,
     upvotePrompt,
     favoritePrompt,
+    incrementPromptViews,
+    getPromptById,
   };
 };
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { Prompt, PromptFilters } from '../../../types/prompt';
 import LibraryHeader from './LibraryHeader';
 import LibrarySearch from './LibrarySearch';
@@ -12,10 +12,29 @@ interface LibraryProps {
   prompts?: Prompt[];
   loading?: boolean;
   onSearch?: (filters: PromptFilters) => void;
-  onLike?: (promptId: string) => void;
-  onCopy?: (promptId: string) => void;
-  onView?: (promptId: string) => void;
+  onLike?: (id: string) => void;
+  onCopy?: (id: string) => void;
+  onView?: (id: string) => void;
 }
+
+// Define default categories that should always appear
+const DEFAULT_CATEGORIES = [
+  'Finance',
+  'Sales', 
+  'Education',
+  'Writing',
+  'Code',
+  'Design',
+  'Productivity',
+  'Marketing',
+  'SEO',
+  'Art',
+  'Business',
+  'Health',
+  'Technology',
+  'Entertainment',
+  'Other'
+];
 
 const Library: React.FC<LibraryProps> = ({
   prompts = [],
@@ -26,18 +45,39 @@ const Library: React.FC<LibraryProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const categories = [
-    { name: 'All', count: 102, icon: null },
-    { name: 'Finance', count: 0, icon: null },
-    { name: 'Sales', count: 0, icon: null },
-    { name: 'Education', count: 0, icon: null },
-    { name: 'Writing', count: 8, icon: null },
-    { name: 'Code', count: 18, icon: null },
-    { name: 'Design', count: 7, icon: null },
-    { name: 'Productivity', count: 0, icon: null },
-    { name: 'Marketing', count: 40, icon: null },
-    { name: 'SEO', count: 40, icon: null },
-  ];
+  // Calculate categories dynamically from prompts data
+  const categories = useMemo(() => {
+    // Get all unique categories from prompts
+    const uniqueCategoriesFromData = Array.from(new Set(prompts.map(prompt => prompt.category)))
+      .filter(category => category) // Remove empty/null categories
+      .sort();
+
+    // Combine default categories with actual data categories
+    const allCategories = Array.from(new Set([...DEFAULT_CATEGORIES, ...uniqueCategoriesFromData]))
+      .sort();
+
+    // Calculate count for each category
+    const categoryCounts = allCategories.reduce((acc, category) => {
+      acc[category] = prompts.filter(prompt => prompt.category === category).length;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Create categories array with counts
+    const categoryList = [
+      { name: 'All', count: prompts.length, icon: null }
+    ];
+
+    // Add each category with its count
+    allCategories.forEach(category => {
+      categoryList.push({
+        name: category,
+        count: categoryCounts[category] || 0,
+        icon: null
+      });
+    });
+
+    return categoryList;
+  }, [prompts]);
 
   const displayPrompts = prompts.length > 0 ? prompts : [];
 
@@ -95,6 +135,7 @@ const Library: React.FC<LibraryProps> = ({
         <div className="mb-4">
           <p className="text-sm text-gray-600">
             {filteredPrompts.length} prompts found
+            {selectedCategory !== 'All' && ` in ${selectedCategory}`}
           </p>
         </div>
 
@@ -105,7 +146,6 @@ const Library: React.FC<LibraryProps> = ({
               prompt={prompt}
               onLike={onLike}
             />
-
           ))}
         </div>
 

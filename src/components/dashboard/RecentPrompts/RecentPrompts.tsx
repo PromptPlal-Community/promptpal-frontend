@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import RecentCard from './RecentCard';
 import { usePrompts } from '../../../hooks/usePrompts';
+import { useMessage } from '../../../hooks/useMessage';
 
 // Define the props interface for RecentPrompts
 interface RecentPromptsProps {
@@ -9,9 +10,20 @@ interface RecentPromptsProps {
 }
 
 const RecentPrompts: React.FC<RecentPromptsProps> = () => {
-  const { prompts, loading, error, fetchPrompts } = usePrompts();
+  const { 
+    prompts, 
+    loading, 
+    error, 
+    fetchPrompts, 
+    updatePrompt,
+    deletePrompt 
+  } = usePrompts();
+  
+  const navigate = useNavigate();
+  const { showMessage } = useMessage();
 
-  // Fetch prompts when component mounts - use empty dependency array
+
+  // Fetch prompts when component mounts
   useEffect(() => {
     fetchPrompts({
       limit: 3,
@@ -22,11 +34,77 @@ const RecentPrompts: React.FC<RecentPromptsProps> = () => {
 
   // Get only the first 3 prompts
   const displayedPrompts = prompts.slice(0, 3);
+  // Handle edit prompt - navigate to edit form
+  const handleEdit = (id: string) => {
+    navigate(`/dashboard/prompts/edit/${id}`);
+  };
 
-  console.log('RecentPrompts state:', { loading, error, promptsCount: prompts.length, displayedPromptsCount: displayedPrompts.length });
+  // Handle publish prompt using updatePrompt
+  const handlePublish = async (promptId: string) => {
+    try {
+      const formData = new FormData();
+      formData.append("isPublic", "true");
+      formData.append("isDraft", "false");
+      
+      await updatePrompt(promptId, formData);
+       showMessage('Prompt published successfully!', 'success');
+      
+      // Refresh the prompts to update the status
+      fetchPrompts({
+        limit: 3,
+        sortBy: 'createdAt',
+        sortOrder: 'desc'
+      });
+    } catch (error) {
+      console.error('Failed to publish prompt:', error);
+      showMessage('Failed to publish prompt', 'error');
+    }
+  };
+
+  // Handle unpublish prompt using updatePrompt to set as draft
+  const handleUnpublish = async (promptId: string) => {
+    try {
+      const formData = new FormData();
+      formData.append("isPublic", "false");
+      formData.append("isDraft", "true");
+      
+      await updatePrompt(promptId, formData);
+      showMessage('Prompt moved to drafts!', 'success');
+      
+      // Refresh the prompts to update the status
+      fetchPrompts({
+        limit: 3,
+        sortBy: 'createdAt',
+        sortOrder: 'desc'
+      });
+    } catch (error) {
+      console.error('Failed to unpublish prompt:', error);
+      showMessage('Failed to unpublish prompt', 'error');
+    }
+  };
+
+  // Handle delete prompt
+  const handleDelete = async (promptId: string) => {
+    // showMessage does not return a boolean; use a confirmation dialog instead
+    if (window.confirm('Are you sure you want to delete this prompt? This action cannot be undone.')) {
+      try {
+        await deletePrompt(promptId);
+        showMessage('Prompt deleted successfully!', 'success');
+        
+        // Refresh the prompts to update the list
+        fetchPrompts({
+          limit: 3,
+          sortBy: 'createdAt',
+          sortOrder: 'desc'
+        });
+      } catch (error) {
+        console.error('Failed to delete prompt:', error);
+        showMessage('Failed to delete prompt', 'error');
+      }
+    }
+  };
 
   if (loading) {
-    console.log('RecentPrompts: Showing loading state');
     return (
       <div className="lg:col-span-2 shadow rounded-lg p-5 bg-white">
         <h2 className="text-lg font-bold text-gray-700 mb-3">Recent Prompts</h2>
@@ -62,7 +140,6 @@ const RecentPrompts: React.FC<RecentPromptsProps> = () => {
     );
   }
 
-  console.log('RecentPrompts: Showing data state with', displayedPrompts.length, 'prompts');
   return (
     <div className="lg:col-span-2 shadow rounded-lg p-5 bg-white">
       <h2 className="text-lg font-bold text-gray-700 mb-3">Recent Prompts</h2>
@@ -73,6 +150,10 @@ const RecentPrompts: React.FC<RecentPromptsProps> = () => {
           <RecentCard
             key={prompt._id}
             prompt={prompt}
+            onEdit={handleEdit}
+            onPublish={handlePublish}
+            onUnpublish={handleUnpublish}
+            onDelete={handleDelete}
           />
         ))}
         
@@ -80,7 +161,7 @@ const RecentPrompts: React.FC<RecentPromptsProps> = () => {
           <div className="bg-white p-8 text-center rounded-lg border-2 border-dashed border-gray-300">
             <p className="text-gray-500">No prompts created yet</p>
             <Link
-              to={"/dashboard/create-prompt"}
+              to={"/dashboard/create-new-prompt"}
               className="mt-2 text-[#270450] hover:underline">
               Create your first prompt
             </Link>

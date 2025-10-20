@@ -19,11 +19,11 @@ const QuickActions: React.FC<QuickActionsProps> = ({
   const navigate = useNavigate();
 
   const handleCreatePrompt = () => {
-    navigate("/dashboard/create-prompt");
+    navigate("/dashboard/create-new-prompt");
   };
 
   const handleBrowseLibrary = () => {
-    navigate("/dashboard/library");
+    navigate("/dashboard/promptpal-library");
   };
 
   const handleCommunityFeeds = () => {

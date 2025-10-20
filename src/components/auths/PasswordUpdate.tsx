@@ -1,18 +1,23 @@
 import React, { useState } from "react";
 
 import { Eye, EyeOff } from "lucide-react";
-import toast, { Toaster } from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
 import passwordBanner from "../../assets/images/password.png"
+import { useAuth } from "../../hooks/useAuth";
+import { useMessage } from "../../hooks/useMessage";
+import {useNavigate } from "react-router-dom";
 
 function PasswordUpdate() {
   const [formData, setFormData] = useState({
     password: "",
     confirmPassword: "",
   });
-
+  const { resetPassword } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { showMessage } = useMessage();
+  const navigate = useNavigate();
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>): void {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,10 +27,24 @@ function PasswordUpdate() {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match");
-      setLoading(false)
+      showMessage("Passwords do not match", "error");
+      setLoading(false);
       return;
     }
+
+    setLoading(true);
+    const email = window.history.state?.usr?.email || "";
+
+    const success = await resetPassword(email, formData.password);
+    if (success) {
+      setFormData({
+        password: "",
+        confirmPassword: "",
+      });
+      showMessage("Password reset successfully!", "success");
+      navigate("/passwordsuccess");
+    }
+    setLoading(false);
     
   }
 
@@ -90,13 +109,14 @@ function PasswordUpdate() {
             <button
               type="submit"
               disabled={loading}
+              onClick={handleSubmit}
               className={`w-full py-3 rounded-lg font-semibold transition ${
                 loading
                   ? "bg-[#270450]/30 cursor-not-allowed"
                   : "bg-[#270450]/90 hover:bg-[#270450]/80 text-white"
               }`}
             >
-              {loading ? "Updating Password..." : "Update Password"}
+              {loading ? "Resetting Password..." : "Reset Password"}
             </button>
           </form>
         </div>
