@@ -24,7 +24,7 @@ const LibrarySearch: React.FC<LibrarySearchProps> = ({ searchQuery, onSearch }) 
         <div className='flex flex-row items-end justify-end w-full'>
         <Link 
           type="button"
-          to="/dashboard/create-prompt"
+          to="/dashboard/create-new-prompt"
           className="flex items-center gap-2 bg-[#270450] hover:bg-[#270450]/80 text-white px-4 py-2 rounded-lg transition-colors"
         >
           <FaPlus /> Create prompt

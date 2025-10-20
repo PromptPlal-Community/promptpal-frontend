@@ -2,12 +2,14 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import loginBanner from "../../assets/images/login-banner.png"
+import { useAuth } from "../../hooks/useAuth";
 
 
 function ForgotPassword() {
   const [formData, setFormData] = useState({
     email: "",
   });
+  const { forgotPassword } = useAuth();
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>): void {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -15,6 +17,7 @@ function ForgotPassword() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    await forgotPassword(formData.email);    
   }
 
   return (
@@ -50,8 +53,10 @@ function ForgotPassword() {
             />
 
             <button
-              className="w-full py-3 rounded-lg font-semibold transition bg-[#270450]
+              className="w-full py-3 cursor-pointer rounded-lg font-semibold transition bg-[#270450]
            text-[#ffff] hover:bg-[#270450]/90 mt-5"
+              type="submit"
+              onClick={handleSubmit}
             >
               Send Reset Link
             </button>

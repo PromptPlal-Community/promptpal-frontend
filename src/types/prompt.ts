@@ -11,6 +11,8 @@ export interface ImageTransformation {
   [key: string]: string | number | undefined;
 }
 
+export type AiToolType = 'ChatGPT' | 'Claude' | 'Bard' | 'Midjourney' | 'DALL-E' | 'Stable Diffusion' | 'Other';
+
 export interface ResponsiveImage {
   width: number;
   url: string;
@@ -85,7 +87,7 @@ export interface Prompt {
   promptText: string;
   resultText?: string;
   images: PromptImage[];
-  aiTool: 'ChatGPT' | 'Claude' | 'Bard' | 'Midjourney' | 'DALL-E' | 'Stable Diffusion' | 'Other';
+  aiTool: string[];
   tags: string[];
   author: PromptAuthor;
   community?: Community;
@@ -106,22 +108,55 @@ export interface Prompt {
   metadata: PromptMetadata;
   createdAt: string;
   updatedAt: string;
+  maxLength?: number,
+  data?: {
+      title: string;
+  description: string;
+  promptText: string;
+  resultText?: string;
+  images: PromptImage[];
+  aiTool: string[];
+  tags: string[];
+  author: PromptAuthor;
+  community?: Community;
+  isPublic: boolean;
+  isDraft: boolean;
+  requiresLevel: 'Newbie' | 'Contributor' | 'Pro' | 'Expert';
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  category: 'Art' | 'Writing' | 'Code' | 'Marketing' | 'Design' | 'Education' | 'Other';
+  estimatedTokens: number;
+  upvotes: number;
+  upvotedBy: string[];
+  downloads: number;
+  views: number;
+  rating: PromptRating;
+  comments: PromptComment[];
+  version: number;
+  parentPrompt?: string;
+  metadata: PromptMetadata;
+  createdAt: string;
+  updatedAt: string;
+  maxLength?: number;
+  }
 }
 
 export interface CreatePromptData {
   title: string;
   description: string;
   promptText: string;
-  resultText?: string;
-  aiTool: 'ChatGPT' | 'Claude' | 'Bard' | 'Midjourney' | 'DALL-E' | 'Stable Diffusion' | 'Other';
-  tags: string[];
+  resultText: string;
+  aiTool: string[];
   category: 'Art' | 'Writing' | 'Code' | 'Marketing' | 'Design' | 'Education' | 'Other';
+  tags: string[];
   isPublic: boolean;
-  community?: string;
-  estimatedTokens?: number;
+  isDraft: boolean;
+  community: string;
+  estimatedTokens: number;
+  images: UploadedImage[];
+  maxLength: number;
 }
 
-export interface UpdatePromptData extends Partial<CreatePromptData> {
+export interface UpdatePromptData extends Partial<Prompt> {
   updatedAt?: string;
   isDraft?: boolean;
   version?: number;
@@ -177,10 +212,11 @@ export interface PromptFilters {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
-  aiTool?: string;
+  aiTool?: string[];
   difficulty?: string;
   requiresLevel?: string;
   tags?: string[];
+  maxLength?: number;
 }
 
 // User types
@@ -275,7 +311,7 @@ export interface CloudinaryTransformationOptions {
 export interface SearchFilters {
   query: string;
   category?: string;
-  aiTool?: string;
+  aiTool?: AiToolType[];
   difficulty?: string;
   sortBy?: 'recent' | 'popular' | 'rating' | 'views';
   sortOrder?: 'asc' | 'desc';
@@ -287,13 +323,14 @@ export interface PromptFormData {
   description: string;
   promptText: string;
   resultText?: string;
-  aiTool: string;
+  aiTool: string[];
   tags: string[];
   category: string;
   difficulty: string;
   isPublic: boolean;
   requiresLevel: string;
   community?: string;
+  maxLength?: number;
 }
 
 // Component-specific types
@@ -313,7 +350,7 @@ export interface FormPromptData {
   description: string;
   promptText: string;
   resultText: string;
-  aiTool: string;
+  aiTool: string[];
   category: string;
   tags: string[];
   isPublic: boolean;
@@ -321,4 +358,14 @@ export interface FormPromptData {
   community: string;
   estimatedTokens: number;
   images: UploadedImage[];
+  maxLength: number;
+};
+
+export interface InputWithCountProps {
+  value: string;
+  onChange: (value: string) => void;
+  maxLength?: number;
+  placeholder?: string;
+  label?: string;
+  type?: string;
 }

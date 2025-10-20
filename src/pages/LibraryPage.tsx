@@ -2,25 +2,37 @@
 import React from 'react';
 import { PageContainer } from '../components/layout/PageContainer';
 import { Library } from '../components/dashboard/library';
-import { mockPrompts } from '../types/mockPrompts';
+import { usePrompts } from '../hooks/usePrompts';
 
 const LibraryPage: React.FC = () => {
+  const { prompts, incrementPromptViews, upvotePrompt, fetchPrompts } = usePrompts();
+
+  // onView logic from usePrompts
+  const handleView = (id: string) => {
+    incrementPromptViews(id);
+  };
+
+  const handleUpvote = (id: string) => {
+    upvotePrompt(id);
+  };
+
+  const handleFetch = () => {
+    fetchPrompts();
+  };
 
   return (
     <PageContainer padding="none">
         <Library
-          prompts={mockPrompts}
-          loading={false}
-          onSearch={(filters) => console.log('Search filters:', filters)}
-          onLike={(id) => console.log('Like prompt:', id)}
+          prompts={prompts}
+          onSearch={() => handleFetch()}
+          onLike={(id) => handleUpvote(id)}
           onCopy={(id) => {
-            const prompt = mockPrompts.find(p => p._id === id);
+            const prompt = prompts.find(p => p._id === id);
             if (prompt) {
               navigator.clipboard.writeText(prompt.promptText);
-              console.log('Prompt copied to clipboard');
             }
           }}
-          onView={(id) => console.log('View prompt:', id)}
+          onView={(id) => handleView(id)}
         />
     </PageContainer>
   );

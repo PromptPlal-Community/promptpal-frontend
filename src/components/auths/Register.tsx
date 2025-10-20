@@ -10,6 +10,7 @@ const Register: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { googleLogin, googleLoading, hasGoogleAccount, linkGoogleAccount } = useAuth();
   const navigate = useNavigate();
   const { register } = useAuth();
   
@@ -55,6 +56,15 @@ const Register: React.FC = () => {
       setLoading(false);
     }
   }
+
+  const handleGoogleLogin = async (): Promise<void> => {
+    await googleLogin();
+  };
+
+  const handleLinkGoogle = async (): Promise<void> => {
+    await linkGoogleAccount();
+  };
+
 
   return (
     <>
@@ -187,20 +197,14 @@ const Register: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full py-3 rounded-lg font-semibold text-sm transition-all duration-200 ${
-                    loading
-                      ? "bg-[#270450]/30 cursor-not-allowed text-gray-500"
-                      : "bg-[#270450]/90 hover:bg-[#270450] text-white shadow-sm hover:shadow-md"
+              className={`w-full flex items-center justify-center py-3 rounded-lg font-semibold text-sm transition-all duration-200 ${
+                loading
+                  ? "bg-white border-2 border-purple-600 cursor-not-allowed text-gray-500"
+                  : "bg-[#270450] hover:bg-[#270450]/80 text-white shadow-sm hover:shadow-md"
                   }`}
                 >
                   {loading ? (
-                    <span className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Creating Account...
-                    </span>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                   ) : (
                     "Create Account"
                   )}
@@ -212,13 +216,48 @@ const Register: React.FC = () => {
                   <div className="flex-grow h-px bg-gray-300"></div>
                 </div>
 
-                <button
-                  type="button"
-                  className="w-full flex items-center justify-center gap-3 border border-gray-300 bg-white py-3 rounded-lg hover:bg-gray-50 transition text-sm font-medium text-gray-700"
-                >
-                  <FcGoogle className="w-4 h-4" />
-                  <span>Continue with Google</span>
-                </button>
+                {!hasGoogleAccount ? (
+                  <button
+                    type="button"
+                    onClick={handleGoogleLogin}
+                    disabled={googleLoading}
+                    className="w-full flex items-center justify-center gap-2 border border-gray-300 bg-white py-3 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                  >
+                    {googleLoading ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-600"></div>
+                    ) : (
+                      <>
+                        <FcGoogle size={18} />
+                        <span>Sign up with Google</span>
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleLinkGoogle}
+                    disabled={googleLoading}
+                    className="w-full flex items-center justify-center gap-2 border border-gray-300 bg-white py-3 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                  >
+                    {googleLoading ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-600"></div>
+                    ) : (
+                      <>
+                        <FcGoogle size={18} />
+                        <span>Link Google Account</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* Show link button if user is logged in but doesn't have Google linked */}
+                {hasGoogleAccount() && (
+                  <div className="p-4 bg-blue-50 rounded-md">
+                    <p className="text-sm text-blue-700 mb-2">
+                      Your Google account is linked
+                    </p>
+                  </div>
+                )}
               </form>
             </div>
           </div>

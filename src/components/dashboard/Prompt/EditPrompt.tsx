@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from "react";
-import type { ChangeEvent, MouseEvent } from "react";
-import { Sparkles, Eye, Save } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Sparkles, Eye, Save, ArrowLeft } from "lucide-react";
 import type { FormPromptData, UploadedImage, Prompt } from "../../../types/prompt";
 import { usePrompts } from "../../../hooks/usePrompts";
+import toast from "react-hot-toast";
 import { PreviewModal } from "./PreviewModal";
 import { ImageUpload } from "./ImageUpload";
 import { CharacterCountInput } from "./CharacterCountInput";
 import { AiToolsSelector } from "./AiToolsSelector";
 import { TagsInput } from "./TagsInput";
-import { useMessage } from '../../../hooks/useMessage';
 
-// Local storage keys
-const DRAFT_KEY = 'prompt_draft';
-const CURRENT_PROMPT_ID_KEY = 'current_prompt_id';
-
-export const PromptForm: React.FC = () => {
+export const EditPrompt: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  
   const [formData, setFormData] = useState<FormPromptData>({
     title: "",
     description: "",
@@ -34,57 +33,12 @@ export const PromptForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showPreviewModal, setShowPreviewModal] = useState<boolean>(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
-  const [currentPromptId, setCurrentPromptId] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const { showMessage } = useMessage();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  // Use Partial<Prompt> because response data may omit required fields like _id;
+  // use optional chaining when accessing properties on originalPrompt.
+  const [originalPrompt, setOriginalPrompt] = useState<Partial<Prompt> | null>(null);
 
-  const { createPrompt, updatePrompt } = usePrompts();
-
-  // Load draft from localStorage on component mount
-  useEffect(() => {
-    const savedDraft = localStorage.getItem(DRAFT_KEY);
-    const savedPromptId = localStorage.getItem(CURRENT_PROMPT_ID_KEY);
-    
-    if (savedDraft) {
-      try {
-        const draftData = JSON.parse(savedDraft);
-        setFormData(draftData);
-        setHasUnsavedChanges(true);
-      } catch (error) {
-        console.error('Error loading draft:', error);
-      }
-    }
-    
-    if (savedPromptId) {
-      setCurrentPromptId(savedPromptId);
-      setIsEditing(true);
-    }
-  }, []);
-
-  // Save to localStorage when form data changes
-  useEffect(() => {
-    if (hasUnsavedChanges) {
-      const timeoutId = setTimeout(() => {
-        localStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
-      }, 1000); // Debounce to avoid too many writes
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [formData, hasUnsavedChanges]);
-
-  // Warn user before leaving with unsaved changes
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasUnsavedChanges) {
-        e.preventDefault();
-        showMessage('You have unsaved changes. Are you sure you want to leave?', 'warning', 5000, 'Warning');
-        return showMessage;
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [hasUnsavedChanges, showMessage]);
+  const { updatePrompt, getPromptById } = usePrompts();
 
   const categories: FormPromptData["category"][] = [
     "Art",
@@ -95,8 +49,85 @@ export const PromptForm: React.FC = () => {
     "Education",
   ];
 
+// Load prompt data when component mounts or id changes
+// Load prompt data when component mounts or id changes
+useEffect(() => {
+  let isMounted = true; // prevent updates after unmount
+
+  const loadPrompt = async () => {
+    if (!id) {
+      toast.error("No prompt ID provided");
+      navigate("/dashboard/library", { replace: true });
+      return;
+    }
+
+    setIsLoading(true);
+
+try {
+  const response = await getPromptById(id);
+  console.log("Loaded prompt:", response);
+  // getPromptById returns the Prompt directly, not an object with a `data` field
+  const promptToEdit = response?.data;
+  if (!promptToEdit) {
+    toast.error("Prompt not found");
+    navigate("/dashboard/library", { replace: true });
+    return;
+  }
+      // ✅ Ensure all prompt details appear in form fields
+      const newFormData: FormPromptData = {
+        title: promptToEdit.title || "",
+        description: promptToEdit.description || "",
+        promptText: promptToEdit.promptText || "",
+        resultText: promptToEdit.resultText || "",
+        aiTool: Array.isArray(promptToEdit.aiTool) ? promptToEdit.aiTool : [],
+        category: promptToEdit.category || "Art",
+        tags: Array.isArray(promptToEdit.tags) ? promptToEdit.tags : [],
+        isPublic: !!promptToEdit.isPublic,
+        isDraft: typeof promptToEdit.isDraft === "boolean" ? promptToEdit.isDraft : true,
+        community: typeof promptToEdit.community === "string" ? promptToEdit.community : "",
+        estimatedTokens: Number(promptToEdit.estimatedTokens) || 0,
+        images: Array.isArray(promptToEdit.images) ? promptToEdit.images : [],
+        maxLength: 10000,
+      };
+
+      if (isMounted) {
+        setFormData(newFormData);
+        setOriginalPrompt(promptToEdit);
+        setHasUnsavedChanges(false);
+      }
+    } catch (error) {
+      console.error("Error loading prompt:", error);
+      toast.error("Error loading prompt");
+      navigate("/dashboard/library", { replace: true });
+    } finally {
+      if (isMounted) setIsLoading(false);
+    }
+  };
+
+  loadPrompt();
+
+  return () => {
+    isMounted = false;
+  };
+}, [id, navigate]);
+
+
+
+  // Debug: Log when formData actually updates
+  useEffect(() => {
+    console.log("FormData state updated:", formData);
+    console.log("FormData title:", formData.title);
+    console.log("FormData description:", formData.description);
+    console.log("FormData promptText:", formData.promptText);
+  }, [formData]);
+
+  // Debug: Log when originalPrompt updates
+  useEffect(() => {
+    console.log("OriginalPrompt state updated:", originalPrompt);
+  }, [originalPrompt]);
+
   const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ): void => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
@@ -140,111 +171,26 @@ export const PromptForm: React.FC = () => {
     setHasUnsavedChanges(true);
   };
 
-  const clearDraft = () => {
-    localStorage.removeItem(DRAFT_KEY);
-    localStorage.removeItem(CURRENT_PROMPT_ID_KEY);
-    setCurrentPromptId(null);
-    setIsEditing(false);
-    setHasUnsavedChanges(false);
-  };
-
-  const handleSaveDraft = async (): Promise<void> => {
-    if (!formData.title.trim() && !formData.promptText.trim()) {
-    showMessage('Something went wrong!', 'error', 3000, 'Error Title');
-      return;
-    }
-
-    // Prevent multiple submissions
-    if (isSubmitting) {
-      showMessage('Please wait, saving in progress...', 'error', 3000, 'Error Title');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const formDataToSend = new FormData();
-      formDataToSend.append("title", formData.title);
-      formDataToSend.append("description", formData.description);
-      formDataToSend.append("promptText", formData.promptText);
-      formDataToSend.append("resultText", formData.resultText || "");
-
-      formDataToSend.append("aiTool", JSON.stringify(formData.aiTool));
-      formDataToSend.append("category", formData.category);
-      formDataToSend.append("isPublic", formData.isPublic.toString());
-      formDataToSend.append("isDraft", "true");
-
-      if (formData.tags.length > 0) {
-        formDataToSend.append("tags", formData.tags.join(","));
-      } else {
-        formDataToSend.append("tags", "");
-      }
-
-      formDataToSend.append("requiresLevel", "Newbie");
-      formDataToSend.append("difficulty", "Beginner");
-
-      if (formData.images.length > 0) {
-        const captions: string[] = [];
-        formData.images.forEach((image) => {
-          if (image.file) {
-            formDataToSend.append("images", image.file);
-            captions.push(image.name || "");
-          }
-        });
-
-        if (captions.length > 0) {
-          formDataToSend.append("captions", JSON.stringify(captions));
-        }
-      }
-
-      let savedPrompt: Prompt;
-      
-      if (currentPromptId && isEditing) {
-        // Update existing prompt
-        savedPrompt = await updatePrompt(currentPromptId, formDataToSend);
-        showMessage('Draft updated successfully!', 'success');
-      } else {
-        // Create new prompt
-        savedPrompt = await createPrompt(formDataToSend);
-        setCurrentPromptId(savedPrompt._id);
-        localStorage.setItem(CURRENT_PROMPT_ID_KEY, savedPrompt._id);
-        setIsEditing(true);
-        showMessage('Draft saved successfully!', 'success');
-      }
-
-      setHasUnsavedChanges(false);
-      // Clear localStorage draft since it's now saved to database
-      localStorage.removeItem(DRAFT_KEY);
-      
-    } catch (error) {
-      console.error("Draft save error:", error);
-      showMessage('Error saving draft. Please try again.', 'error', 3000, 'Error Title');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleSubmit = async (publish: boolean = false): Promise<void> => {
+  const handleSave = async (publish: boolean = false): Promise<void> => {
     if (!formData.title.trim()) {
-      showMessage('Please enter a title', 'error', 3000, 'Error Title');
+      toast.error("Please enter a title");
       return;
     }
     if (!formData.promptText.trim()) {
-      showMessage('Please enter prompt content', 'error', 3000, 'Error Title');
+      toast.error("Please enter prompt content");
       return;
     }
     if (!formData.description.trim()) {
-      showMessage('Please enter prompt description', 'error', 3000, 'Error Title');
+      toast.error("Please enter prompt description");
       return;
     }
     if (!formData.aiTool.length) {
-      showMessage('Please select at least one AI tool', 'error', 3000, 'Error Title');
+      toast.error("Please select at least one AI tool");
       return;
     }
 
-    // Prevent multiple submissions
-    if (isSubmitting) {
-      showMessage('Please wait, submission in progress...', 'error', 3000, 'Error Title');
+    if (!id) {
+      toast.error("No prompt ID available");
       return;
     }
 
@@ -259,10 +205,7 @@ export const PromptForm: React.FC = () => {
 
       formDataToSend.append("aiTool", JSON.stringify(formData.aiTool));
       formDataToSend.append("category", formData.category);
-      formDataToSend.append(
-        "isPublic",
-        publish ? "true" : formData.isPublic.toString()
-      );
+      formDataToSend.append("isPublic", publish ? "true" : formData.isPublic.toString());
       formDataToSend.append("isDraft", (!publish).toString());
 
       if (formData.tags.length > 0) {
@@ -288,141 +231,106 @@ export const PromptForm: React.FC = () => {
         }
       }
 
-      let result: Prompt;
-      
-      if (currentPromptId && isEditing) {
-        // Update existing prompt
-        result = await updatePrompt(currentPromptId, formDataToSend);
-      } else {
-        // Create new prompt
-        result = await createPrompt(formDataToSend);
-        setCurrentPromptId(result._id);
-        setIsEditing(true);
-      }
-
+      await updatePrompt(id, formDataToSend);
       setHasUnsavedChanges(false);
-      clearDraft();
 
-      showMessage(publish ? 'Prompt published successfully!' : 'Prompt saved as draft!', 'success');
+      toast.success(
+        publish
+          ? "Prompt published successfully!"
+          : "Prompt updated successfully!"
+      );
 
-      // Reset form only on successful publish
-      if (publish) {
-        setFormData({
-          title: "",
-          description: "",
-          promptText: "",
-          resultText: "",
-          aiTool: [],
-          category: "Art",
-          tags: [],
-          isPublic: false,
-          isDraft: true,
-          community: "",
-          estimatedTokens: 0,
-          images: [],
-          maxLength: 10000,
-        });
-        clearDraft();
-      }
+      // Navigate back to library after successful save
+      navigate("/dashboard/library");
     } catch (error) {
-      console.error("Submission error:", error);
-      const errorMessage = "Error creating prompt. Please try again.";
-      
-      if (error && typeof error === "object") {
-        const err = error as {
-          message?: string;
-          response?: {
-            data?: {
-              error?: string;
-            };
-          };
-        };
-
-        if (err.message?.includes("uploader") || err.message?.includes("Cloudinary")) {
-          showMessage('Image upload service configuration error. Please try without images.', 'error', 5000, 'Error Title');
-        } else if (err.response?.data?.error) {
-          showMessage(`Server error: ${err.response.data.error}`, 'error', 5000, 'Error Title');
-        } else {
-          showMessage(errorMessage, 'error', 5000, 'Error Title');
-        }
-      } else {
-        showMessage(errorMessage, 'error', 5000, 'Error Title');
-      }
+      console.error("Update error:", error);
+      toast.error("Error updating prompt. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handlePublishClick = (e: MouseEvent<HTMLButtonElement>): void => {
+  const handlePublishClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
     e.preventDefault();
-    handleSubmit(true);
+    handleSave(true);
   };
 
-  const handleCreateNew = () => {
-    if (hasUnsavedChanges) {
-      showMessage('You have unsaved changes. Please save or discard them before creating a new prompt.', 'warning', 5000, 'Warning');
-      return;
-    }
-    
-    setFormData({
-      title: "",
-      description: "",
-      promptText: "",
-      resultText: "",
-      aiTool: [],
-      category: "Art",
-      tags: [],
-      isPublic: false,
-      isDraft: true,
-      community: "",
-      estimatedTokens: 0,
-      images: [],
-      maxLength: 10000,
-    });
-    clearDraft();
-    showMessage("New prompt form ready!", 'success');
+  const handleSaveClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
+    e.preventDefault();
+    handleSave(false);
   };
+
+  // Warn user about unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  const handleBackClick = () => {
+    if (hasUnsavedChanges) {
+      const confirmLeave = window.confirm(
+        "You have unsaved changes. Are you sure you want to leave?"
+      );
+      if (confirmLeave) {
+        navigate("/dashboard/library");
+      }
+    } else {
+      navigate("/dashboard/library");
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-row mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div className="flex-1">
+            <button
+              onClick={handleBackClick}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-4"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Library
+            </button>
             <h1 className="text-3xl font-bold text-gray-900">
-              {isEditing ? "Edit Prompt" : "Create New Prompt"}
+              Edit Prompt
             </h1>
             <p className="mt-2 text-sm text-gray-600">
-              {isEditing 
-                ? "Update your existing prompt draft" 
-                : "Build and share your AI prompts with the community"
-              }
+              Update your prompt details
             </p>
-            {hasUnsavedChanges && (
-              <p className="mt-1 text-sm text-amber-600">
-                ⚠️ You have unsaved changes
-              </p>
+            {originalPrompt && (
+              <div className="mt-2 text-sm text-gray-500">
+                Status: {originalPrompt.isPublic ? "Published" : "Draft"}
+                {originalPrompt.version && ` • Version ${originalPrompt.version}`}
+                {hasUnsavedChanges && " • Unsaved changes"}
+              </div>
             )}
           </div>
+          
           {/* Action Buttons */}
-          <div className="flex items-center space-x-2">
-            {isEditing && (
-              <button
-                type="button"
-                onClick={handleCreateNew}
-                className="flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                New Prompt
-              </button>
-            )}
-            
+          <div className="flex items-center gap-2 mt-4 md:mt-0">
             <button
               type="button"
-              onClick={handleSaveDraft}
-              disabled={isSubmitting}
-              className="flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
+              onClick={handleSaveClick}
+              disabled={isSubmitting || !hasUnsavedChanges}
+              className="flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="w-4 h-4" />
-              {isEditing ? "Update Draft" : "Save Draft"}
+              {isSubmitting ? "Saving..." : "Save Changes"}
             </button>
 
             <button
@@ -434,18 +342,21 @@ export const PromptForm: React.FC = () => {
               Preview
             </button>
 
-            <button
-              type="button"
-              onClick={handlePublishClick}
-              disabled={isSubmitting}
-              className="px-4 py-2 bg-purple-600 text-white border border-purple-600 rounded-md hover:bg-purple-700 transition-colors font-medium flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span className="mr-2">🚀</span>
-              {isSubmitting ? "Publishing..." : "Publish"}
-            </button>
+            {!originalPrompt?.isPublic && (
+              <button
+                type="button"
+                onClick={handlePublishClick}
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-purple-600 text-white border border-purple-600 rounded-md hover:bg-purple-700 transition-colors font-medium flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="mr-2">🚀</span>
+                {isSubmitting ? "Publishing..." : "Publish"}
+              </button>
+            )}
           </div>
         </div>
 
+        {/* Form Content - Same as PromptForm */}
         <form className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Information Section */}
@@ -613,12 +524,12 @@ export const PromptForm: React.FC = () => {
             <div className="space-y-3">
               <button
                 type="button"
-                onClick={handleSaveDraft}
-                disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
+                onClick={handleSaveClick}
+                disabled={isSubmitting || !hasUnsavedChanges}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save className="w-4 h-4" />
-                Save Draft
+                Save Changes
               </button>
 
               <button
@@ -630,15 +541,17 @@ export const PromptForm: React.FC = () => {
                 Preview
               </button>
 
-              <button
-                type="button"
-                onClick={handlePublishClick}
-                disabled={isSubmitting}
-                className="w-full cursor-pointer px-4 py-3 bg-purple-600 text-white border border-purple-600 rounded-md hover:bg-purple-700 transition-colors font-medium flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span className="mr-2">🚀</span>
-                {isSubmitting ? "Publishing..." : "Publish Prompt"}
-              </button>
+              {!originalPrompt?.isPublic && (
+                <button
+                  type="button"
+                  onClick={handlePublishClick}
+                  disabled={isSubmitting}
+                  className="w-full cursor-pointer px-4 py-3 bg-purple-600 text-white border border-purple-600 rounded-md hover:bg-purple-700 transition-colors font-medium flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="mr-2">🚀</span>
+                  {isSubmitting ? "Publishing..." : "Publish Prompt"}
+                </button>
+              )}
             </div>
           </div>
         </form>
@@ -653,4 +566,4 @@ export const PromptForm: React.FC = () => {
   );
 };
 
-export default PromptForm;
+export default EditPrompt;

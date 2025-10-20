@@ -11,6 +11,7 @@ import CommunityPage from './CommunityPage';
 import SettingsPage from './SettingsPage';
 import { useAuth } from '../hooks/useAuth';
 import PromptDetailsPage from './prompts/[id]';
+import PromptEditPage from './prompts/edit/[id]';
 
 const DashboardRouter: React.FC = () => {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ const DashboardRouter: React.FC = () => {
   // Extract page from URL
   useEffect(() => {
     const path = location.pathname;
-    const page = path.split('/dashboard/')[1] || 'workspace';
+    const page = path.split('/dashboard/workspace')[1] || 'workspace';
     setActivePage(page);
   }, [location.pathname]);
 
@@ -45,7 +46,8 @@ const DashboardRouter: React.FC = () => {
         <Route path="/favorites" element={<FavoritesPage />} />
         <Route path="/community" element={<CommunityPage />} />
         <Route path="/settings" element={<SettingsPage />} />
-        <Route path='/prompts/:id' element={<PromptDetailsPage/>} />
+        <Route path='/prompts/:id' element={<PromptDetailsPage />} />
+        <Route path='/prompts/edit/:id' element={<PromptEditPage />} />
         {/* Fallback route */}
         <Route path="*" element={<WorkspacePage />} />
       </Routes>
