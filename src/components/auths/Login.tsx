@@ -11,9 +11,16 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [remember, setRemember] = useState<boolean>(true);
-  
+
   // Use auth hook only once
-  const { loading, login, googleLogin, googleLoading, hasGoogleAccount, isAuthenticated } = useAuth();
+  const {
+    loading,
+    login,
+    googleLogin,
+    googleLoading,
+    hasGoogleAccount,
+    isAuthenticated,
+  } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
@@ -28,34 +35,31 @@ const Login: React.FC = () => {
     await login(credentials);
   };
 
-const handleGoogleLogin = async (): Promise<void> => {
-  console.log('🔄 Starting Google login...');
-  try {
-    await googleLogin();
-    console.log('✅ Google login completed successfully');
-  } catch (error) {
-    console.error('❌ Google login failed:', error);
-  }
-};
+  const handleGoogleLogin = async (): Promise<void> => {
+    console.log("🔄 Starting Google login...");
+    try {
+      await googleLogin();
+      console.log("✅ Google login completed successfully");
+    } catch (error) {
+      console.error("❌ Google login failed:", error);
+    }
+  };
 
   return (
-    <section className="flex flex-col md:flex-row min-h-screen">
-      {/* Image Section - Hidden on mobile, visible on md and up */}
-      <div className="hidden md:flex md:w-2/5 bg-white items-center justify-center p-0 overflow-hidden">
+    <section className="flex flex-col lg:flex-row min-h-screen">
+      <div className="lg:w-3/5 w-full bg-white hidden lg:flex items-center justify-center overflow-hidden p-10">
         <img
           src={loginBanner}
           alt="AI Prompt Library Illustration"
-          className="w-full h-full object-cover min-h-screen"
+          className="loginImage"
         />
       </div>
 
-      {/* Form Section - Full width on mobile, 3/5 on desktop */}
-      <div className="w-full md:w-3/5 flex flex-col items-center justify-center py-6 md:py-8 px-4 md:px-8">
+      <div className="w-full md:w-3/5 flex flex-col items-center justify-center min-h-screen py-6 md:py-8 px-4 md:px-8">
         <Toaster position="top-right" />
 
-        {/* Mobile-friendly container with better spacing */}
         <div className="w-full max-w-sm md:max-w-md">
-          <div className="text-end">
+          <div className="mt-6 text-end mb-5">
             <p className="text-gray-600 text-sm">
               Are you new here?{" "}
               <Link

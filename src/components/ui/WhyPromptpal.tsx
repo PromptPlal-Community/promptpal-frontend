@@ -1,8 +1,7 @@
-import saveTimeImage from "../../assets/images/save-time.png"
-import betterMoreImage from "../../assets/images/better-more.png"
-import streamlinedImage from "../../assets/images/streamlined.png"
-import dataDrivenImage from "../../assets/images/data-driven.png"
-
+import saveTimeImage from "../../assets/images/save-time.png";
+import betterMoreImage from "../../assets/images/refine.png";
+import streamlinedImage from "../../assets/images/streamlined.png";
+import dataDrivenImage from "../../assets/images/data-driven.png";
 
 function WhyPromptpal() {
   return (
@@ -20,9 +19,11 @@ function WhyPromptpal() {
         <div className=" whyPp bg-gray-100">
           {/* Reason 1 */}
           <div className="  whyPPDiv ">
-            <div className="bg-gray-300 whyPPImage">
-              <img src={saveTimeImage} alt="save time with prompt-pal"
-              className="h-50 w-full"
+            <div className=" whyPPImage">
+              <img
+                src={saveTimeImage}
+                alt="save time with prompt-pal"
+                className="whyPPImage "
               />
             </div>
             <div className="whyPPText">
@@ -38,9 +39,11 @@ function WhyPromptpal() {
 
           {/* Reason 2 */}
           <div className="  whyPPDiv ">
-            <div className="bg-[#D749FA1A]  whyPPImage ">
-              <img src={betterMoreImage} alt="save time with prompt-pal"
-              className="h-50 w-full"
+            <div className="  whyPPImage ">
+              <img
+                src={betterMoreImage}
+                alt="save time with prompt-pal"
+                className="whyPPImage"
               />
             </div>
             <div className="whyPPText">
@@ -56,10 +59,13 @@ function WhyPromptpal() {
 
           {/* Reason 3 */}
           <div className="  whyPPDiv">
-            <div className="bg-gray-300  whyPPImage ">
-              <img src={streamlinedImage} alt="save time with prompt-pal"
-              className="h-50 w-full"
-              />            </div>
+            <div className=" whyPPImage ">
+              <img
+                src={streamlinedImage}
+                alt="save time with prompt-pal"
+                className="whyPPImage"
+              />{" "}
+            </div>
             <div className="whyPPText">
               <h3 className="font-bold mb-2 text-gray-800">
                 Streamlined collaboration for teams
@@ -73,10 +79,13 @@ function WhyPromptpal() {
 
           {/* Reason 4 */}
           <div className=" whyPPDiv">
-            <div className="bg-gray-300 whyPPImage">
-              <img src={dataDrivenImage} alt="save time with prompt-pal"
-              className="h-50 w-full"
-              />            </div>
+            <div className=" whyPPImage">
+              <img
+                src={dataDrivenImage}
+                alt="save time with prompt-pal"
+                className="whyPPImage"
+              />{" "}
+            </div>
             <div className="whyPPText">
               <h3 className="font-bold mb-2 text-gray-800">
                 Data-driven improvement with analytics

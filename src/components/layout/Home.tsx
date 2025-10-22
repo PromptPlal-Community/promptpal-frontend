@@ -1,3 +1,4 @@
+import { useState } from "react";
 import LandingPage from "../ui/LandingPage";
 import About from "../ui/About";
 import Features from "../ui/Features";
@@ -11,10 +12,19 @@ import Footer from "../ui/Footer";
 import Navbar from "./Navbar";
 
 function Home() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <>
-      <Navbar/>
-      <LandingPage />
+      <Navbar onMenuToggle={setMenuOpen} />
+      <main
+        className={`transition-all duration-300 ${
+          menuOpen ? "mt-80" : "mt-10"
+        }`}
+      >
+        <LandingPage />
+      </main>
+
       <About />
       <Features />
       <PLibrary />

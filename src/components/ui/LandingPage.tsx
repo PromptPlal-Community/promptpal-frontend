@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import bannerImage from "../../assets/images/ai-prompt-library.png";
+import bannerImage from "../../assets/images/erasebg-transformed.png";
 
 function LandingPage() {
   return (
@@ -23,13 +23,14 @@ function LandingPage() {
           </Link>
         </div>
 
-        <div className="rounded-lg h-64 md:h-80 flex items-center justify-center">
+        <div className="">
           <img
             src={bannerImage}
             alt="AI Prompt Library Illustration"
-            className="rounded-lg w-full h-auto max-w-md mx-auto"
+            className="bannerImg "
           />
-          
+
+          {/* rounded-lg w-full h-auto max-w-md mx-auto */}
         </div>
       </div>
     </section>
