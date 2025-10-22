@@ -19,7 +19,7 @@ function Home() {
       <Navbar onMenuToggle={setMenuOpen} />
       <main
         className={`transition-all duration-300 ${
-          menuOpen ? "mt-80" : "mt-10"
+          menuOpen ? "mt-55" : "mt-0"
         }`}
       >
         <LandingPage />

@@ -3,7 +3,7 @@ import bannerImage from "../../assets/images/erasebg-transformed.png";
 
 function LandingPage() {
   return (
-    <section className="bg-[#270450]  text-white min-h-screen flex items-center justify-center pt-10">
+    <section className="bg-[#270450]  text-white min-h-screen flex items-center justify-center pt-10 w-full md:min-h-[60vh]  lg:min-h-[100vh]">
       <div className=" width container mx-auto px-6 md:text-left grid md:grid-cols-2 gap-10 items-center">
         <div>
           <h1 className="text-4xl md:text-5xl font-bold leading-tight">
