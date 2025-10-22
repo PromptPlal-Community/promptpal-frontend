@@ -21,29 +21,35 @@ function App() {
   return (
     <>
       <MessageProvider>
-      <Routes>
-        {/* Landing Page */}
-        <Route path="/" element={<Home />} />
+        <Routes>
+          {/* Landing Page */}
+          <Route path="/" element={<Home />} />
 
-        {/* Auth Pages */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/verify" element={<EmailVerification />} />
-        <Route path="/success" element={<EmailSuccess />} />
-        <Route path="/forgotpassword" element={<ForgotPassword />} />
-        <Route path="/passwordverify" element={<PasswordVerification />} />
-        <Route path="/reset-password" element={<PasswordUpdate />} />
-        <Route path="/passwordsuccess" element={<PasswordSuccess />} />
+          {/* Auth Pages */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/verify" element={<EmailVerification />} />
+          <Route path="/success" element={<EmailSuccess />} />
+          <Route path="/forgotpassword" element={<ForgotPassword />} />
+          <Route path="/passwordverify" element={<PasswordVerification />} />
+          <Route path="/reset-password" element={<PasswordUpdate />} />
+          <Route path="/passwordsuccess" element={<PasswordSuccess />} />
 
-        {/* Other Pages */}
-        <Route path="/ctrending" element={<CTrending />} />
+          {/* Other Pages */}
+          <Route path="/ctrending" element={<CTrending />} />
 
-        {/* Dashboard Routes */}
-        <Route path="/dashboard/*" element={<DashboardRouter />} />
-        <Route path="/dashboard/prompts/:id" element={<PromptDetailsPage />} />
-        <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
-        <Route path="*" element={<div>404 Not Found</div>} />
-      </Routes>
+          {/* Dashboard Routes */}
+          <Route path="/dashboard/*" element={<DashboardRouter />} />
+          <Route
+            path="/dashboard/prompts/:id"
+            element={<PromptDetailsPage />}
+          />
+          <Route
+            path="/auth/google/callback"
+            element={<GoogleAuthCallback />}
+          />
+          <Route path="*" element={<div>404 Not Found</div>} />
+        </Routes>
       </MessageProvider>
     </>
   );

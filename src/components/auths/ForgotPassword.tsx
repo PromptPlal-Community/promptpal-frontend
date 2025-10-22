@@ -28,11 +28,11 @@ function ForgotPassword() {
         <img
           src={loginBanner}
           alt="AI Prompt Library Illustration"
-          className="w-full h-full object-cover min-h-screen"
+          className="loginImage"
         />
       </div>
 
-        <div className="md:w-3/5 w-full mt-15 flex flex-col items-center justify-center">
+        <div className="w-full md:w-3/5 flex flex-col items-center justify-center min-h-screen py-6 md:py-8 px-4 md:px-8">
           <Toaster position="top-right" />
           <form
             className=" rounded-lg  w-full max-w-md"
