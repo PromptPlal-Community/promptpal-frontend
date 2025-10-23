@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
-import { 
-  Heart, 
+import {  
   Download, 
   Eye, 
   User, 
@@ -17,9 +16,14 @@ import {
   Music,
   Video,
   BarChart3,
-  Languages
+  Languages,
+  Share,
+  ThumbsDown,
+  Bookmark,
+  ThumbsUp
 } from 'lucide-react';
-import type { Prompt } from '../../../types/prompt';
+import type { PromptCardProps } from '../../../types/prompt';
+import { useAuth } from "../../../hooks/useAuth";
 
 // Define the type for category colors
 type CategoryColorKey = 
@@ -82,7 +86,6 @@ const getIconFromPrompt = (prompt: PromptForIcon) => {
   const lowerTitle = prompt.title.toLowerCase();
   const category = prompt.category.toLowerCase();
   const aiTool = prompt.aiTool.map(t => t.toLowerCase());
-
 
   // Check title keywords first
   if (lowerTitle.includes('coding') || lowerTitle.includes('code') || lowerTitle.includes('react') || lowerTitle.includes('component') || lowerTitle.includes('javascript') || lowerTitle.includes('typescript')) {
@@ -160,50 +163,83 @@ const getIconFromPrompt = (prompt: PromptForIcon) => {
   return <Code className="w-4 h-4" />;
 };
 
-interface PromptCardProps {
-  prompt: Prompt;
-  onLike?: (id: string) => void;
-  onBookmark?: (id: string) => void;
-  onDownload?: (id: string) => void;
-  className?: string;
-}
-interface PromptCardProps {
-  prompt: Prompt;
-  onLike?: (id: string) => void;
-  onBookmark?: (id: string) => void;
-  onDownload?: (id: string) => void;
-  className?: string;
-}
-
 export default function PromptCard({ 
   prompt, 
-  onLike, 
-  // onBookmark, 
-  // onDownload,
+  onLike,
+  onDislike,
+  onFavorite,
+  onDownload,
+  onView,
+  onShare,
+  onRate,
+  interactions,
   className = "" 
 }: PromptCardProps) {
   // Use the helper function to safely get color scheme
   const colorScheme = getColorScheme(prompt.category);
-
   const icon = getIconFromPrompt(prompt);
+  const {getCurrentUser} = useAuth();
 
   const handleLike = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    onLike?.(prompt._id);
+    onLike?.();
   };
 
-  // const handleBookmark = (e: React.MouseEvent) => {
-  //   e.preventDefault();
-  //   e.stopPropagation();
-  //   onBookmark?.(prompt._id);
-  // };
+  const handleDislike = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDislike?.();
+  };
 
-  // const handleDownload = (e: React.MouseEvent) => {
-  //   e.preventDefault();
-  //   e.stopPropagation();
-  //   onDownload?.(prompt._id);
-  // };
+  const handleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onFavorite?.();
+  };
+
+  const handleDownload = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDownload?.();
+  };
+
+  const handleRate = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onRate?.();
+  };
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onShare?.();
+  };
+
+  // Handle card click to track views
+  const handleCardClick = () => {
+    // Call onView to increment views when the card is clicked
+    onView?.();
+  };
+
+  const getVoteCount = () => {
+    if (interactions?.liked) {
+      return (prompt.upvotes || 0) + 1;
+    }
+    
+    if (interactions?.disliked) {
+      // If user was previously upvoting, remove that upvote
+      const currentUser = getCurrentUser();
+      const wasUpvoted = currentUser ? prompt.upvotedBy?.includes(currentUser.id) : false;
+      if (wasUpvoted) {
+        return Math.max(0, (prompt.upvotes || 0) - 1);
+      }
+      // Otherwise just show current upvotes
+      return prompt.upvotes || 0;
+    }
+    
+    return prompt.upvotes || 0;
+  };
 
   // Format category name for display
   const formatCategory = (category: string) => {
@@ -230,6 +266,7 @@ export default function PromptCard({
     <Link 
       to={`/dashboard/prompts/${prompt._id}`}
       className={`${colorScheme.bg} rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 flex flex-col h-full group cursor-pointer ${className}`}
+      onClick={handleCardClick} // Track view when card is clicked
     >
       <div className="p-5 flex-1 flex flex-col">
         {/* Header with category and actions */}
@@ -243,14 +280,23 @@ export default function PromptCard({
             </div>
           </div>
           <div className="flex items-center gap-1">
+            {/* Favorite Button */}
             <button
-              onClick={handleLike}
-              className="p-1.5 text-gray-400 hover:text-red-500 transition-colors duration-200 rounded-lg hover:bg-white/50"
-              title="Like prompt"
+              onClick={handleFavorite}
+              className="p-1.5 text-gray-400 hover:text-yellow-500 transition-colors duration-200 rounded-lg hover:bg-white/50"
+              title="Add to favorites"
             >
-              <Heart 
-                className={`w-5 h-5 ${prompt.upvotedBy.length > 0 ? 'fill-red-500 text-red-500' : ''}`} 
+              <Bookmark 
+                className={`w-5 h-5 ${interactions?.favorited ? 'fill-yellow-500 text-yellow-500' : ''}`} 
               />
+            </button>
+            {/* Share Button */}
+            <button
+              onClick={handleShare}
+              className="p-2 text-gray-400 hover:text-blue-500 transition-colors duration-200 rounded-lg hover:bg-white/50"
+              title="Share prompt"
+            >
+              <Share className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -282,7 +328,7 @@ export default function PromptCard({
         </div>
 
         {/* Tags */}
-        {prompt.tags.length > 0 && (
+        {prompt.tags && prompt.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
             {prompt.tags.slice(0, 3).map((tag: string, index: number) => (
               <span
@@ -302,27 +348,63 @@ export default function PromptCard({
 
         {/* Stats and Author */}
         <div className="flex items-center justify-between pt-4 border-t border-gray-200/50 mt-auto">
-          <div className="flex items-center gap-4 text-sm text-gray-600">
-            <div className="flex items-center gap-1.5 font-medium">
-              <Heart className={`w-4 h-4 ${prompt.upvotedBy.length > 0 ? 'text-red-500' : ''}`} />
-              <span>{prompt.upvotes}</span>
+          <div className="flex items-center gap-6 text-sm text-gray-600">
+            {/* Like/Dislike Section */}
+            <div className="flex items-center font-medium">
+              <button
+                onClick={handleLike}
+                className="p-1 text-gray-400 hover:text-green-600 transition-colors duration-200 rounded-lg hover:bg-white/50"
+                title="Like prompt"
+              >
+                <ThumbsUp className={`w-4 h-4 ${interactions?.liked ? 'fill-green-600 text-green-600' : ''}`} />
+              </button>
+              
+              <span className="min-w-[20px] text-center font-semibold">
+                {getVoteCount()}
+              </span>
+              
+              <button
+                onClick={handleDislike}
+                className="p-1 text-gray-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-white/50"
+                title="Dislike prompt"
+              >
+                <ThumbsDown className={`w-4 h-4 ${interactions?.disliked ? 'fill-red-600 text-red-600' : ''}`} />
+              </button>
             </div>
-            <div className="flex items-center gap-1.5 font-medium">
+
+            {/* Downloads */}
+            <button
+              onClick={handleDownload}
+              className="flex items-center gap-1.5 font-medium hover:text-blue-600 transition-colors"
+              title="Download prompt"
+            >
               <Download className="w-4 h-4" />
-              <span>{prompt.downloads}</span>
-            </div>
+              <span>{prompt.downloads || 0}</span>
+            </button>
+
+            {/* Views */}
             <div className="flex items-center gap-1.5 font-medium">
               <Eye className="w-4 h-4" />
-              <span>{prompt.views}</span>
+              <span>{prompt.views || 0}</span>
             </div>
-            <div className="flex items-center gap-1.5 font-medium">
+
+            {/* Rating */}
+            <button
+              onClick={handleRate}
+              className="flex items-center gap-1.5 font-medium hover:text-yellow-600 transition-colors"
+              title="Rate prompt"
+            >
               <Star className="w-4 h-4 text-yellow-500" />
-              <span>{prompt.rating.average.toFixed(1)}</span>
-            </div>
+              <span>{(prompt.rating?.average || 0).toFixed(1)}</span>              
+            </button>
           </div>
+
+          {/* Author */}
           <div className="flex items-center gap-2">
             <User className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-gray-700 font-semibold">{prompt.author.username}</span>
+            <span className="text-sm text-gray-700 font-semibold">
+              {prompt.author?.username}
+            </span>
           </div>
         </div>
       </div>

@@ -14,7 +14,7 @@ const RecentPrompts: React.FC<RecentPromptsProps> = () => {
     prompts, 
     loading, 
     error, 
-    fetchPrompts, 
+    fetchUserPrompts, 
     updatePrompt,
     deletePrompt 
   } = usePrompts();
@@ -23,17 +23,13 @@ const RecentPrompts: React.FC<RecentPromptsProps> = () => {
   const { showMessage } = useMessage();
 
 
-  // Fetch prompts when component mounts
   useEffect(() => {
-    fetchPrompts({
-      limit: 3,
-      sortBy: 'createdAt',
-      sortOrder: 'desc'
-    });
-  }, []);
+    fetchUserPrompts();
+  }, [fetchUserPrompts]);
 
   // Get only the first 3 prompts
   const displayedPrompts = prompts.slice(0, 3);
+
   // Handle edit prompt - navigate to edit form
   const handleEdit = (id: string) => {
     navigate(`/dashboard/prompts/edit/${id}`);
@@ -47,14 +43,10 @@ const RecentPrompts: React.FC<RecentPromptsProps> = () => {
       formData.append("isDraft", "false");
       
       await updatePrompt(promptId, formData);
-       showMessage('Prompt published successfully!', 'success');
+      showMessage('Prompt published successfully!', 'success');
       
       // Refresh the prompts to update the status
-      fetchPrompts({
-        limit: 3,
-        sortBy: 'createdAt',
-        sortOrder: 'desc'
-      });
+      fetchUserPrompts();
     } catch (error) {
       console.error('Failed to publish prompt:', error);
       showMessage('Failed to publish prompt', 'error');
@@ -72,11 +64,7 @@ const RecentPrompts: React.FC<RecentPromptsProps> = () => {
       showMessage('Prompt moved to drafts!', 'success');
       
       // Refresh the prompts to update the status
-      fetchPrompts({
-        limit: 3,
-        sortBy: 'createdAt',
-        sortOrder: 'desc'
-      });
+      fetchUserPrompts();
     } catch (error) {
       console.error('Failed to unpublish prompt:', error);
       showMessage('Failed to unpublish prompt', 'error');
@@ -85,18 +73,13 @@ const RecentPrompts: React.FC<RecentPromptsProps> = () => {
 
   // Handle delete prompt
   const handleDelete = async (promptId: string) => {
-    // showMessage does not return a boolean; use a confirmation dialog instead
     if (window.confirm('Are you sure you want to delete this prompt? This action cannot be undone.')) {
       try {
         await deletePrompt(promptId);
         showMessage('Prompt deleted successfully!', 'success');
         
         // Refresh the prompts to update the list
-        fetchPrompts({
-          limit: 3,
-          sortBy: 'createdAt',
-          sortOrder: 'desc'
-        });
+        fetchUserPrompts();
       } catch (error) {
         console.error('Failed to delete prompt:', error);
         showMessage('Failed to delete prompt', 'error');
@@ -130,7 +113,7 @@ const RecentPrompts: React.FC<RecentPromptsProps> = () => {
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
           <p className="text-red-600">Error loading prompts: {error}</p>
           <button 
-            onClick={() => fetchPrompts({ limit: 3, sortBy: 'createdAt', sortOrder: 'desc' })}
+            onClick={() => fetchUserPrompts()}
             className="mt-2 text-red-600 hover:text-red-800 underline"
           >
             Try again
@@ -171,7 +154,7 @@ const RecentPrompts: React.FC<RecentPromptsProps> = () => {
 
       {displayedPrompts.length > 0 && (
         <Link 
-          to="/dashboard/library"
+          to="/dashboard/promptpal-library"
           className="flex items-center justify-center w-full p-4 py-2 bg-[#270450] text-white rounded-lg hover:bg-[#270450]/80"
         >
           View all prompts

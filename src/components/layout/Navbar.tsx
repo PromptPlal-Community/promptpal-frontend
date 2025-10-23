@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { HiOutlineMenu, HiOutlineX } from "react-icons/hi"; // 👈 Import icons
+import { HiOutlineMenu, HiOutlineX } from "react-icons/hi";
 import promptPalLogo from "../../../public/prompt-pal-logo.png";
 
 interface NavbarProps {
@@ -72,12 +72,16 @@ function Navbar({ onMenuToggle }: NavbarProps) {
           <Link to="/" className="block hover:text-[#270450]/90">Community</Link>
           <Link to="/" className="block hover:text-[#270450]/90">Library</Link>
           <Link to="/" className="block hover:text-[#270450]/90">Pricing</Link>
-          <button className="w-full px-4 py-2 rounded-lg text-[#270450]/90 hover:bg-purple-100">
+          <Link className="w-full px-4 py-2 rounded-lg text-[#270450]/90 hover:bg-purple-100"
+          to="/login"
+          >
             Login
-          </button>
-          <button className="w-full px-4 py-2 rounded-lg bg-[#270450]/90 text-white hover:bg-[#270450]/90">
+          </Link>
+          <Link className="w-full px-4 py-2 rounded-lg bg-[#270450]/90 text-white hover:bg-[#270450]/90"
+          to="register"
+          >
             Sign Up
-          </button>
+          </Link>
         </div>
       )}
     </nav>

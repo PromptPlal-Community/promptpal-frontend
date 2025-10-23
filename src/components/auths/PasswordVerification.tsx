@@ -31,18 +31,12 @@ function PasswordVerification() {
           <h2 className="text-2xl font-bold text-[#270450] mb-4">
             Email Confirmation
           </h2>
-          <p className="text-gray-800 mb-6">
-            Check your inbox we have sent a password reset link to {email}
+          <p className="text-gray-800 mb-6 font-medium">
+            Check your inbox <br /> we have sent a password reset link to:
           </p>
-
-          <Link
-            to="/"
-            className="px-6 py-3 bg-[#270450]
-           text-[#ffff]  font-semibold rounded-lg shadow hover:bg-[#270450]/90"
-          >
-            Open Email
-          </Link>
-
+          <p className="text-white mb-6 bg-[#270450] px-4 py-2 rounded-lg inline-block">
+            {email || "Your email address"}
+          </p>
           <p className="text-gray-800 mt-6">
             Didn't receive the email{" "}
             <Link to="/forgotpassword" className="text-[#270450] font-semibold underline">

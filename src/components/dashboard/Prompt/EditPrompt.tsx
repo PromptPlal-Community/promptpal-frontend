@@ -50,9 +50,8 @@ export const EditPrompt: React.FC = () => {
   ];
 
 // Load prompt data when component mounts or id changes
-// Load prompt data when component mounts or id changes
 useEffect(() => {
-  let isMounted = true; // prevent updates after unmount
+  let isMounted = true;
 
   const loadPrompt = async () => {
     if (!id) {
@@ -63,17 +62,16 @@ useEffect(() => {
 
     setIsLoading(true);
 
-try {
-  const response = await getPromptById(id);
-  console.log("Loaded prompt:", response);
-  // getPromptById returns the Prompt directly, not an object with a `data` field
-  const promptToEdit = response?.data;
-  if (!promptToEdit) {
-    toast.error("Prompt not found");
-    navigate("/dashboard/library", { replace: true });
-    return;
-  }
-      // ✅ Ensure all prompt details appear in form fields
+    try {
+      // ✅ getPromptById returns the prompt object directly
+      const promptToEdit = await getPromptById(id);
+      
+      if (!promptToEdit || !promptToEdit._id) {
+        toast.error("Prompt not found");
+        navigate("/dashboard/library", { replace: true });
+        return;
+      }
+
       const newFormData: FormPromptData = {
         title: promptToEdit.title || "",
         description: promptToEdit.description || "",
@@ -110,21 +108,6 @@ try {
     isMounted = false;
   };
 }, [id, navigate]);
-
-
-
-  // Debug: Log when formData actually updates
-  useEffect(() => {
-    console.log("FormData state updated:", formData);
-    console.log("FormData title:", formData.title);
-    console.log("FormData description:", formData.description);
-    console.log("FormData promptText:", formData.promptText);
-  }, [formData]);
-
-  // Debug: Log when originalPrompt updates
-  useEffect(() => {
-    console.log("OriginalPrompt state updated:", originalPrompt);
-  }, [originalPrompt]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>

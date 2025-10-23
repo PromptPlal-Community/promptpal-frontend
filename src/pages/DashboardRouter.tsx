@@ -12,7 +12,8 @@ import SettingsPage from './SettingsPage';
 import { useAuth } from '../hooks/useAuth';
 import PromptDetailsPage from './prompts/[id]';
 import PromptEditPage from './prompts/edit/[id]';
-
+import CreateTrendsPage from './community/CreateTrendsPage'
+import CreateCommunityPage from './community/CreateCommunityPage'
 const DashboardRouter: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -48,6 +49,8 @@ const DashboardRouter: React.FC = () => {
         <Route path="/settings" element={<SettingsPage />} />
         <Route path='/prompts/:id' element={<PromptDetailsPage />} />
         <Route path='/prompts/edit/:id' element={<PromptEditPage />} />
+        <Route path='/create-trends' element={<CreateTrendsPage />} />
+        <Route path='/create-community' element={<CreateCommunityPage/>} />
         {/* Fallback route */}
         <Route path="*" element={<WorkspacePage />} />
       </Routes>
