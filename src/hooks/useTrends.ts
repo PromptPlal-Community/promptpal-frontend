@@ -13,10 +13,10 @@ import type {
   CommentResponse,
   RewardResponse,
   RewardTrendData,
-  CreateCommentData
+  CreateCommentData,
+  Comment as TrendComment
 } from '../types/trend';
 
-// Define a proper error type for axios errors
 interface AxiosError {
   response?: {
     data?: {
@@ -26,7 +26,6 @@ interface AxiosError {
   message: string;
 }
 
-// Type guard to check if error is an AxiosError
 const isAxiosError = (error: unknown): error is AxiosError => {
   return typeof error === 'object' && error !== null && 'message' in error;
 };
@@ -36,6 +35,7 @@ export const useTrends = () => {
   const [currentTrend, setCurrentTrend] = useState<Trend | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [comments, setComments] = useState<TrendComment[]>([]); // Use TrendComment here
   const [pagination, setPagination] = useState({
     current: 1,
     total: 1,
@@ -48,7 +48,7 @@ export const useTrends = () => {
     limit?: number;
     community?: string;
     sortBy?: string;
-  }) => {
+  }): Promise<TrendsResponse> => { // Add return type
     try {
       setLoading(true);
       setError(null);
@@ -63,14 +63,18 @@ export const useTrends = () => {
         count: (response.trends || []).length,
         totalRecords: response.totalTrends || 0,
       });
+
+      return response; // Return the response
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch trends');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch trends';
+      setError(errorMessage);
+      throw err; // Re-throw the error
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const getTrendById = useCallback(async (id: string) => {
+  const getTrendById = useCallback(async (id: string): Promise<TrendResponse> => {
     try {
       setLoading(true);
       setError(null);
@@ -79,14 +83,18 @@ export const useTrends = () => {
       console.log('Trend by ID response:', response);
       
       setCurrentTrend(response.trend);
+      setComments(response.comments || []); // This should now work
+      
       return response;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch trend');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch trend';
+      setError(errorMessage);
       throw err;
     } finally {
       setLoading(false);
     }
   }, []);
+
 
   const createTrend = useCallback(async (trendData: CreateTrendData): Promise<Trend | null> => {
     try {
@@ -231,6 +239,34 @@ export const useTrends = () => {
     }
   }, [currentTrend]);
 
+
+const upvoteComment = useCallback(async (commentId: string): Promise<void> => {
+  try {
+    // Implement comment upvote logic
+    console.log('Upvoting comment:', commentId);
+  } catch (err) {
+    throw new Error(err instanceof Error ? err.message : 'Failed to upvote comment');
+  }
+}, []);
+
+const downvoteComment = useCallback(async (commentId: string): Promise<void> => {
+  try {
+    // Implement comment downvote logic
+    console.log('Downvoting comment:', commentId);
+  } catch (err) {
+    throw new Error(err instanceof Error ? err.message : 'Failed to downvote comment');
+  }
+}, []);
+
+const rewardComment = useCallback(async (commentId: string): Promise<void> => {
+  try {
+    // Implement comment reward logic
+    console.log('Rewarding comment:', commentId);
+  } catch (err) {
+    throw new Error(err instanceof Error ? err.message : 'Failed to reward comment');
+  }
+}, []);
+
   const rewardTrend = useCallback(async (trendId: string, rewardData: RewardTrendData): Promise<void> => {
     try {
       if (!authService.isAuthenticated()) {
@@ -275,16 +311,17 @@ export const useTrends = () => {
     page?: number;
     limit?: number;
     timeFrame?: string;
-  }) => {
+  }): Promise<TrendsResponse> => { // Add return type
     try {
       setLoading(true);
       setError(null);
       
       const response: TrendsResponse = await trendService.getTrendingRewards(params);
       setTrends(response.trends || []);
-      return response;
+      return response; // Return the response
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch trending rewards');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch trending rewards';
+      setError(errorMessage);
       throw err;
     } finally {
       setLoading(false);
@@ -300,10 +337,11 @@ export const useTrends = () => {
     getTrends();
   }, [getTrends]);
 
-  return {
+ return {
     // State
     trends,
     currentTrend,
+    comments,
     loading,
     error,
     pagination,
@@ -319,6 +357,9 @@ export const useTrends = () => {
     deleteTrend,
     getTrendingRewards,
     clearError,
+    rewardComment,
+    downvoteComment,
+    upvoteComment
   };
 };
 
@@ -590,16 +631,17 @@ export const useTrendingRewards = () => {
     page?: number;
     limit?: number;
     timeFrame?: string;
-  }) => {
+  }): Promise<TrendsResponse> => { // Add return type
     try {
       setLoading(true);
       setError(null);
       
       const response: TrendsResponse = await trendService.getTrendingRewards(params);
       setTrends(response.trends || []);
-      return response;
+      return response; // Return the response
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch trending rewards');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch trending rewards';
+      setError(errorMessage);
       throw err;
     } finally {
       setLoading(false);

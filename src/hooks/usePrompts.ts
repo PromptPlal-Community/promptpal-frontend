@@ -118,9 +118,9 @@ export const usePrompts = () => {
     }
   };
 
-  const updatePrompt = async (id: string, updateData: FormData, images?: File[]): Promise<Prompt> => {
+  const updatePrompt = async (id: string, updateData: FormData): Promise<Prompt> => {
     try {
-      const updatedPrompt = await promptService.updatePrompt(id, updateData, images);
+      const updatedPrompt = await promptService.updatePrompt(id, updateData);
       setPrompts(prev => prev.map(prompt => 
         prompt._id === id ? updatedPrompt : prompt
       ));

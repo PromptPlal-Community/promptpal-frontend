@@ -14,6 +14,9 @@ import PromptDetailsPage from './prompts/[id]';
 import PromptEditPage from './prompts/edit/[id]';
 import CreateTrendsPage from './community/CreateTrendsPage'
 import CreateCommunityPage from './community/CreateCommunityPage'
+import TrendDetailsPage from './community/trends/[trendId]';
+import CommunitiesList from './community/communities/CommunityListPage';
+import CommunityDetails from './community/communities/[communityId]';
 const DashboardRouter: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -50,7 +53,10 @@ const DashboardRouter: React.FC = () => {
         <Route path='/prompts/:id' element={<PromptDetailsPage />} />
         <Route path='/prompts/edit/:id' element={<PromptEditPage />} />
         <Route path='/create-trends' element={<CreateTrendsPage />} />
-        <Route path='/create-community' element={<CreateCommunityPage/>} />
+        <Route path='/create-community' element={<CreateCommunityPage />} />
+        <Route path="/trends/:id" element={<TrendDetailsPage />} />
+        <Route path="/communities" element={<CommunitiesList />} />
+        <Route path="/communities/:id" element={<CommunityDetails />} />
         {/* Fallback route */}
         <Route path="*" element={<WorkspacePage />} />
       </Routes>

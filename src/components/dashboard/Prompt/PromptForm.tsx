@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from "react";
 import type { ChangeEvent, MouseEvent } from "react";
-import { Sparkles, Eye, Save } from "lucide-react";
-import type { FormPromptData, UploadedImage, Prompt } from "../../../types/prompt";
+import { Sparkles, Eye, Save, Menu, X } from "lucide-react";
+import type {
+  FormPromptData,
+  UploadedImage,
+  Prompt,
+} from "../../../types/prompt";
 import { usePrompts } from "../../../hooks/usePrompts";
 import { PreviewModal } from "./PreviewModal";
 import { ImageUpload } from "./ImageUpload";
 import { CharacterCountInput } from "./CharacterCountInput";
 import { AiToolsSelector } from "./AiToolsSelector";
 import { TagsInput } from "./TagsInput";
-import { useMessage } from '../../../hooks/useMessage';
+import { useMessage } from "../../../hooks/useMessage";
 
 // Local storage keys
-const DRAFT_KEY = 'prompt_draft';
-const CURRENT_PROMPT_ID_KEY = 'current_prompt_id';
+const DRAFT_KEY = "prompt_draft";
+const CURRENT_PROMPT_ID_KEY = "current_prompt_id";
 
 export const PromptForm: React.FC = () => {
   const [formData, setFormData] = useState<FormPromptData>({
@@ -30,12 +34,14 @@ export const PromptForm: React.FC = () => {
     images: [],
     maxLength: 10000,
   });
-  
+
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showPreviewModal, setShowPreviewModal] = useState<boolean>(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
   const [currentPromptId, setCurrentPromptId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isMobileActionsOpen, setIsMobileActionsOpen] =
+    useState<boolean>(false);
   const { showMessage } = useMessage();
 
   const { createPrompt, updatePrompt } = usePrompts();
@@ -44,17 +50,17 @@ export const PromptForm: React.FC = () => {
   useEffect(() => {
     const savedDraft = localStorage.getItem(DRAFT_KEY);
     const savedPromptId = localStorage.getItem(CURRENT_PROMPT_ID_KEY);
-    
+
     if (savedDraft) {
       try {
         const draftData = JSON.parse(savedDraft);
         setFormData(draftData);
         setHasUnsavedChanges(true);
       } catch (error) {
-        console.error('Error loading draft:', error);
+        console.error("Error loading draft:", error);
       }
     }
-    
+
     if (savedPromptId) {
       setCurrentPromptId(savedPromptId);
       setIsEditing(true);
@@ -67,7 +73,7 @@ export const PromptForm: React.FC = () => {
       const timeoutId = setTimeout(() => {
         localStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
       }, 1000); // Debounce to avoid too many writes
-      
+
       return () => clearTimeout(timeoutId);
     }
   }, [formData, hasUnsavedChanges]);
@@ -77,13 +83,18 @@ export const PromptForm: React.FC = () => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
         e.preventDefault();
-        showMessage('You have unsaved changes. Are you sure you want to leave?', 'warning', 5000, 'Warning');
+        showMessage(
+          "You have unsaved changes. Are you sure you want to leave?",
+          "warning",
+          5000,
+          "Warning"
+        );
         return showMessage;
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [hasUnsavedChanges, showMessage]);
 
   const categories: FormPromptData["category"][] = [
@@ -150,13 +161,18 @@ export const PromptForm: React.FC = () => {
 
   const handleSaveDraft = async (): Promise<void> => {
     if (!formData.title.trim() && !formData.promptText.trim()) {
-    showMessage('Something went wrong!', 'error', 3000, 'Error Title');
+      showMessage("Something went wrong!", "error", 3000, "Error Title");
       return;
     }
 
     // Prevent multiple submissions
     if (isSubmitting) {
-      showMessage('Please wait, saving in progress...', 'error', 3000, 'Error Title');
+      showMessage(
+        "Please wait, saving in progress...",
+        "error",
+        3000,
+        "Error Title"
+      );
       return;
     }
 
@@ -198,27 +214,31 @@ export const PromptForm: React.FC = () => {
       }
 
       let savedPrompt: Prompt;
-      
+
       if (currentPromptId && isEditing) {
         // Update existing prompt
         savedPrompt = await updatePrompt(currentPromptId, formDataToSend);
-        showMessage('Draft updated successfully!', 'success');
+        showMessage("Draft updated successfully!", "success");
       } else {
         // Create new prompt
         savedPrompt = await createPrompt(formDataToSend);
         setCurrentPromptId(savedPrompt._id);
         localStorage.setItem(CURRENT_PROMPT_ID_KEY, savedPrompt._id);
         setIsEditing(true);
-        showMessage('Draft saved successfully!', 'success');
+        showMessage("Draft saved successfully!", "success");
       }
 
       setHasUnsavedChanges(false);
       // Clear localStorage draft since it's now saved to database
       localStorage.removeItem(DRAFT_KEY);
-      
     } catch (error) {
       console.error("Draft save error:", error);
-      showMessage('Error saving draft. Please try again.', 'error', 3000, 'Error Title');
+      showMessage(
+        "Error saving draft. Please try again.",
+        "error",
+        3000,
+        "Error Title"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -226,25 +246,40 @@ export const PromptForm: React.FC = () => {
 
   const handleSubmit = async (publish: boolean = false): Promise<void> => {
     if (!formData.title.trim()) {
-      showMessage('Please enter a title', 'error', 3000, 'Error Title');
+      showMessage("Please enter a title", "error", 3000, "Error Title");
       return;
     }
     if (!formData.promptText.trim()) {
-      showMessage('Please enter prompt content', 'error', 3000, 'Error Title');
+      showMessage("Please enter prompt content", "error", 3000, "Error Title");
       return;
     }
     if (!formData.description.trim()) {
-      showMessage('Please enter prompt description', 'error', 3000, 'Error Title');
+      showMessage(
+        "Please enter prompt description",
+        "error",
+        3000,
+        "Error Title"
+      );
       return;
     }
     if (!formData.aiTool.length) {
-      showMessage('Please select at least one AI tool', 'error', 3000, 'Error Title');
+      showMessage(
+        "Please select at least one AI tool",
+        "error",
+        3000,
+        "Error Title"
+      );
       return;
     }
 
     // Prevent multiple submissions
     if (isSubmitting) {
-      showMessage('Please wait, submission in progress...', 'error', 3000, 'Error Title');
+      showMessage(
+        "Please wait, submission in progress...",
+        "error",
+        3000,
+        "Error Title"
+      );
       return;
     }
 
@@ -289,7 +324,7 @@ export const PromptForm: React.FC = () => {
       }
 
       let result: Prompt;
-      
+
       if (currentPromptId && isEditing) {
         // Update existing prompt
         result = await updatePrompt(currentPromptId, formDataToSend);
@@ -303,7 +338,10 @@ export const PromptForm: React.FC = () => {
       setHasUnsavedChanges(false);
       clearDraft();
 
-      showMessage(publish ? 'Prompt published successfully!' : 'Prompt saved as draft!', 'success');
+      showMessage(
+        publish ? "Prompt published successfully!" : "Prompt saved as draft!",
+        "success"
+      );
 
       // Reset form only on successful publish
       if (publish) {
@@ -327,7 +365,7 @@ export const PromptForm: React.FC = () => {
     } catch (error) {
       console.error("Submission error:", error);
       const errorMessage = "Error creating prompt. Please try again.";
-      
+
       if (error && typeof error === "object") {
         const err = error as {
           message?: string;
@@ -338,15 +376,28 @@ export const PromptForm: React.FC = () => {
           };
         };
 
-        if (err.message?.includes("uploader") || err.message?.includes("Cloudinary")) {
-          showMessage('Image upload service configuration error. Please try without images.', 'error', 5000, 'Error Title');
+        if (
+          err.message?.includes("uploader") ||
+          err.message?.includes("Cloudinary")
+        ) {
+          showMessage(
+            "Image upload service configuration error. Please try without images.",
+            "error",
+            5000,
+            "Error Title"
+          );
         } else if (err.response?.data?.error) {
-          showMessage(`Server error: ${err.response.data.error}`, 'error', 5000, 'Error Title');
+          showMessage(
+            `Server error: ${err.response.data.error}`,
+            "error",
+            5000,
+            "Error Title"
+          );
         } else {
-          showMessage(errorMessage, 'error', 5000, 'Error Title');
+          showMessage(errorMessage, "error", 5000, "Error Title");
         }
       } else {
-        showMessage(errorMessage, 'error', 5000, 'Error Title');
+        showMessage(errorMessage, "error", 5000, "Error Title");
       }
     } finally {
       setIsSubmitting(false);
@@ -360,10 +411,15 @@ export const PromptForm: React.FC = () => {
 
   const handleCreateNew = () => {
     if (hasUnsavedChanges) {
-      showMessage('You have unsaved changes. Please save or discard them before creating a new prompt.', 'warning', 5000, 'Warning');
+      showMessage(
+        "You have unsaved changes. Please save or discard them before creating a new prompt.",
+        "warning",
+        5000,
+        "Warning"
+      );
       return;
     }
-    
+
     setFormData({
       title: "",
       description: "",
@@ -380,22 +436,22 @@ export const PromptForm: React.FC = () => {
       maxLength: 10000,
     });
     clearDraft();
-    showMessage("New prompt form ready!", 'success');
+    showMessage("New prompt form ready!", "success");
   };
 
   return (
-    <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-row mb-8">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
+        {/* Header Section - Mobile Responsive */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 lg:mb-8">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
               {isEditing ? "Edit Prompt" : "Create New Prompt"}
             </h1>
-            <p className="mt-2 text-sm text-gray-600">
-              {isEditing 
-                ? "Update your existing prompt draft" 
-                : "Build and share your AI prompts with the community"
-              }
+            <p className="mt-1 sm:mt-2 text-sm text-gray-600">
+              {isEditing
+                ? "Update your existing prompt draft"
+                : "Build and share your AI prompts with the community"}
             </p>
             {hasUnsavedChanges && (
               <p className="mt-1 text-sm text-amber-600">
@@ -403,23 +459,24 @@ export const PromptForm: React.FC = () => {
               </p>
             )}
           </div>
-          {/* Action Buttons */}
-          <div className="flex items-center space-x-2">
+
+          {/* Desktop Action Buttons */}
+          <div className="hidden lg:flex items-center gap-2">
             {isEditing && (
               <button
                 type="button"
                 onClick={handleCreateNew}
-                className="flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm"
               >
                 New Prompt
               </button>
             )}
-            
+
             <button
               type="button"
               onClick={handleSaveDraft}
               disabled={isSubmitting}
-              className="flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 text-sm"
             >
               <Save className="w-4 h-4" />
               {isEditing ? "Update Draft" : "Save Draft"}
@@ -438,33 +495,98 @@ export const PromptForm: React.FC = () => {
               type="button"
               onClick={handlePublishClick}
               disabled={isSubmitting}
-              className="px-4 py-2 bg-purple-600 text-white border border-purple-600 rounded-md hover:bg-purple-700 transition-colors font-medium flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-purple-600 text-white border border-purple-600 rounded-md hover:bg-purple-700 transition-colors font-medium flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               <span className="mr-2">🚀</span>
               {isSubmitting ? "Publishing..." : "Publish"}
             </button>
           </div>
+
+          {/* Mobile Action Buttons Toggle */}
+          <div className="lg:hidden flex items-center justify-between">
+            <div className="flex-1"></div>
+            <button
+              type="button"
+              onClick={() => setIsMobileActionsOpen(!isMobileActionsOpen)}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+            >
+              {isMobileActionsOpen ? (
+                <X className="w-4 h-4" />
+              ) : (
+                <Menu className="w-4 h-4" />
+              )}
+              <span>Actions</span>
+            </button>
+          </div>
         </div>
 
-        <form className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
+        {/* Mobile Actions Dropdown */}
+        {isMobileActionsOpen && (
+          <div className="lg:hidden bg-white rounded-lg border border-gray-200 p-4 mb-6 shadow-sm">
+            <div className="grid grid-cols-2 gap-3">
+              {isEditing && (
+                <button
+                  type="button"
+                  onClick={handleCreateNew}
+                  className="col-span-2 flex items-center justify-center gap-2 px-4 py-3 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm"
+                >
+                  New Prompt
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={handleSaveDraft}
+                disabled={isSubmitting}
+                className="flex items-center justify-center gap-2 px-3 py-3 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 text-sm"
+              >
+                <Save className="w-4 h-4" />
+                {isEditing ? "Update" : "Save"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowPreviewModal(true)}
+                className="flex items-center justify-center gap-2 px-3 py-3 text-purple-600 border border-purple-600 rounded-md hover:bg-purple-50 transition-colors text-sm"
+              >
+                <Eye className="w-4 h-4" />
+                Preview
+              </button>
+
+              <button
+                type="button"
+                onClick={handlePublishClick}
+                disabled={isSubmitting}
+                className="col-span-2 flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white border border-purple-600 rounded-md hover:bg-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                <span>🚀</span>
+                {isSubmitting ? "Publishing..." : "Publish Prompt"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Form Content */}
+        <form className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
+          {/* Left Column - Form Fields */}
+          <div className="xl:col-span-2 space-y-4 sm:space-y-6">
             {/* Basic Information Section */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center mb-6">
-                <Sparkles className="w-5 h-5 text-purple-600 mr-2" />
-                <h2 className="text-lg font-semibold text-gray-900">
+            <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6">
+              <div className="flex items-center mb-4 sm:mb-6">
+                <Sparkles className="w-4 sm:w-5 h-4 sm:h-5 text-purple-600 mr-2" />
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900">
                   Basic Information
                 </h2>
               </div>
-              <p className="text-sm text-gray-600 mb-6">
+              <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
                 Define the core details of your prompt
               </p>
 
-              <div className="space-y-5">
+              <div className="space-y-4 sm:space-y-5">
                 <CharacterCountInput
                   value={formData.title}
                   onChange={(value) => {
-                    setFormData(prev => ({ ...prev, title: value }));
+                    setFormData((prev) => ({ ...prev, title: value }));
                     setHasUnsavedChanges(true);
                   }}
                   maxLength={100}
@@ -483,8 +605,8 @@ export const PromptForm: React.FC = () => {
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                    rows={4}
+                    className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                    rows={3}
                     placeholder="Describe what this prompt does..."
                   />
                 </div>
@@ -502,7 +624,7 @@ export const PromptForm: React.FC = () => {
                     name="category"
                     value={formData.category}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                    className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
                   >
                     <option value="">Select category</option>
                     {categories.map((cat) => (
@@ -522,7 +644,7 @@ export const PromptForm: React.FC = () => {
                     name="community"
                     value={formData.community}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     placeholder="Enter community name (optional)"
                   />
                 </div>
@@ -546,10 +668,7 @@ export const PromptForm: React.FC = () => {
               </div>
             </div>
 
-            <TagsInput
-              tags={formData.tags}
-              onTagsChange={handleTagsChange}
-            />
+            <TagsInput tags={formData.tags} onTagsChange={handleTagsChange} />
 
             <ImageUpload
               onImageUpload={handleImageUpload}
@@ -558,14 +677,14 @@ export const PromptForm: React.FC = () => {
             />
 
             {/* Quick Tips Section */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center mb-6">
-                <Sparkles className="w-5 h-5 text-purple-600 mr-2" />
-                <h2 className="text-lg font-semibold text-gray-900">
+            <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6">
+              <div className="flex items-center mb-4 sm:mb-6">
+                <Sparkles className="w-4 sm:w-5 h-4 sm:h-5 text-purple-600 mr-2" />
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900">
                   Quick Tips
                 </h2>
               </div>
-              <ul className="space-y-2 text-sm text-gray-600">
+              <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-600">
                 <li>• Use {"{variable_name}"} for dynamic content</li>
                 <li>• Be specific and clear in your instructions</li>
                 <li>• Test with different variable values</li>
@@ -575,20 +694,20 @@ export const PromptForm: React.FC = () => {
           </div>
 
           {/* Right Column - Prompt Content and Actions */}
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6">
               <div className="space-y-4">
                 <CharacterCountInput
                   value={formData.promptText}
                   onChange={(value) => {
-                    setFormData(prev => ({ ...prev, promptText: value }));
+                    setFormData((prev) => ({ ...prev, promptText: value }));
                     setHasUnsavedChanges(true);
                   }}
                   maxLength={formData.maxLength}
                   placeholder="Write your detailed prompt here. Be specific about what you want the AI to do..."
                   label="Prompt Content"
                   type="textarea"
-                  rows={15}
+                  rows={8}
                   required={true}
                   name="promptText"
                 />
@@ -601,21 +720,21 @@ export const PromptForm: React.FC = () => {
                     name="resultText"
                     value={formData.resultText}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                    rows={10}
+                    className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                    rows={6}
                     placeholder="Describe what kind of output or result you expect from this prompt"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="space-y-3">
+            {/* Desktop Action Buttons Sidebar */}
+            <div className="hidden lg:block space-y-3">
               <button
                 type="button"
                 onClick={handleSaveDraft}
                 disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 text-sm"
               >
                 <Save className="w-4 h-4" />
                 Save Draft
@@ -634,15 +753,81 @@ export const PromptForm: React.FC = () => {
                 type="button"
                 onClick={handlePublishClick}
                 disabled={isSubmitting}
-                className="w-full cursor-pointer px-4 py-3 bg-purple-600 text-white border border-purple-600 rounded-md hover:bg-purple-700 transition-colors font-medium flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full cursor-pointer px-4 py-3 bg-purple-600 text-white border border-purple-600 rounded-md hover:bg-purple-700 transition-colors font-medium flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               >
                 <span className="mr-2">🚀</span>
                 {isSubmitting ? "Publishing..." : "Publish Prompt"}
               </button>
             </div>
+
+            {/* Mobile Action Buttons Toggle */}
+            <div className="lg:hidden flex items-center justify-between">
+              <div className="flex-1"></div>
+              <button
+                type="button"
+                onClick={() => setIsMobileActionsOpen(!isMobileActionsOpen)}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+              >
+                {isMobileActionsOpen ? (
+                  <X className="w-4 h-4" />
+                ) : (
+                  <Menu className="w-4 h-4" />
+                )}
+                <span>Actions</span>
+              </button>
+            </div>
+
+            {/* Mobile Actions Dropdown */}
+            {isMobileActionsOpen && (
+              <div className="lg:hidden bg-white rounded-lg border border-gray-200 p-4 mb-6 shadow-sm">
+                <div className="grid grid-cols-2 gap-3">
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={handleCreateNew}
+                      className="col-span-2 flex items-center justify-center gap-2 px-4 py-3 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm"
+                    >
+                      New Prompt
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleSaveDraft}
+                    disabled={isSubmitting}
+                    className="flex items-center justify-center gap-2 px-3 py-3 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 text-sm"
+                  >
+                    <Save className="w-4 h-4" />
+                    {isEditing ? "Update" : "Save"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPreviewModal(true)}
+                    className="flex items-center justify-center gap-2 px-3 py-3 text-purple-600 border border-purple-600 rounded-md hover:bg-purple-50 transition-colors text-sm"
+                  >
+                    <Eye className="w-4 h-4" />
+                    Preview
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handlePublishClick}
+                    disabled={isSubmitting}
+                    className="col-span-2 flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white border border-purple-600 rounded-md hover:bg-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  >
+                    <span>🚀</span>
+                    {isSubmitting ? "Publishing..." : "Publish Prompt"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </form>
       </div>
+
+      {/* Spacer for mobile bottom bar */}
+      <div className="lg:hidden h-20" />
 
       <PreviewModal
         isOpen={showPreviewModal}

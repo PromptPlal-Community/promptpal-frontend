@@ -3,17 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { 
   TrendingUp,
   MessageCircle,
-  Heart,
   Share2,
   Eye,
   Award,
   Calendar,
   User,
-  MoreHorizontal
+  MoreHorizontal,
+  Bookmark,
+  Flag,
+  ArrowBigUp,
+  ArrowBigDown
 } from 'lucide-react';
 import type { Trend } from '../../../../types/trend';
 
-// Define the type for category colors
 type CategoryColorKey = 
   | 'Technology' 
   | 'Entertainment' 
@@ -62,11 +64,16 @@ const getColorScheme = (category: string) => {
   };
 };
 
+
 interface TrendCardProps {
   trend: Trend;
   onViewTrend?: (trendId: string) => void;
   onUpvote?: (trendId: string) => void;
+  onDownvote?: (trendId: string) => void;
   onComment?: (trendId: string) => void;
+  onReward?: (trendId: string) => void;
+  onShare?: (trend: Trend) => void;
+  onBookmark?: (trendId: string) => void;
   className?: string;
   showCommunity?: boolean;
 }
@@ -75,7 +82,10 @@ export default function TrendCard({
   trend,
   onViewTrend,
   onUpvote,
-  onComment,
+  onDownvote,
+  onReward,
+  onShare,
+  onBookmark,
   className = "",
   showCommunity = true
 }: TrendCardProps) {
@@ -98,12 +108,51 @@ export default function TrendCard({
     }
   };
 
+  const handleDownvoteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onDownvote) {
+      onDownvote(trend._id);
+    }
+  };
+
   const handleCommentClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (onComment) {
-      onComment(trend._id);
+    if (onViewTrend) {
+      onViewTrend(trend._id);
     } else {
       navigate(`/trends/${trend._id}#comments`);
+    }
+  };
+
+  const handleRewardClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onReward) {
+      onReward(trend._id);
+    }
+  };
+
+  const handleShareClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onShare) {
+      onShare(trend);
+    } else {
+      // Default share behavior
+      if (navigator.share) {
+        navigator.share({
+          title: trend.title,
+          text: trend.content,
+          url: `${window.location.origin}/trends/${trend._id}`,
+        });
+      } else {
+        navigator.clipboard.writeText(`${window.location.origin}/trends/${trend._id}`);
+      }
+    }
+  };
+
+  const handleBookmarkClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onBookmark) {
+      onBookmark(trend._id);
     }
   };
 
@@ -208,58 +257,95 @@ export default function TrendCard({
 
         {/* Stats and Actions */}
         <div className="flex items-center justify-between pt-4 border-t border-gray-200/50">
-          {/* Left side - Stats */}
-          <div className="flex items-center gap-6 text-sm text-gray-600">
-            {/* Upvotes */}
-            <button 
-              onClick={handleUpvoteClick}
-              className="flex items-center gap-2 hover:text-blue-600 transition-colors group/upvote"
-            >
-              <div className="p-1 rounded group-hover/upvote:bg-blue-50 transition-colors">
-                <Heart className="w-4 h-4 group-hover/upvote:fill-blue-600" />
-              </div>
-              <span className="font-semibold">{formatNumber(trend.upvotes?.length || 0)}</span>
-            </button>
-
-            {/* Comments */}
-            <button 
-              onClick={handleCommentClick}
-              className="flex items-center gap-2 hover:text-green-600 transition-colors group/comment"
-            >
-              <div className="p-1 rounded group-hover/comment:bg-green-50 transition-colors">
-                <MessageCircle className="w-4 h-4" />
-              </div>
-              <span className="font-semibold">{formatNumber(trend.commentCount || 0)}</span>
-            </button>
-
-            {/* Views */}
-            <div className="flex items-center gap-2">
-              <div className="p-1 rounded">
-                <Eye className="w-4 h-4" />
-              </div>
-              <span className="font-semibold">{formatNumber(trend.views || 0)}</span>
+          {/* Left side - Stats with vote arrows */}
+          <div className="flex items-center gap-4">
+            {/* Other stats */}
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+            {/* Vote buttons */}
+            <div className="flex items-center">
+              <button 
+                onClick={handleUpvoteClick}
+                className="p-1 hover:bg-green-50 rounded transition-colors group/upvote"
+                title="Upvote"
+              >
+                <ArrowBigUp className="w-4 h-4 text-gray-500 group-hover/upvote:text-purple-600" />
+              </button>
+              <span className="text-sm font-semibold text-gray-700">
+                {formatNumber(trend.voteScore || 0)}
+              </span>
+              <button 
+                onClick={handleDownvoteClick}
+                className="p-1 hover:bg-red-50 rounded transition-colors group/downvote"
+                title="Downvote"
+              >
+                <ArrowBigDown className="w-4 h-4 text-gray-500 group-hover/downvote:text-red-600" />
+              </button>
             </div>
 
-            {/* Rewards */}
-            {trend.totalRewards > 0 && (
-              <div className="flex items-center gap-2">
-                <div className="p-1 rounded">
-                  <Award className="w-4 h-4 text-yellow-600" />
+              {/* Comments */}
+              <button 
+                onClick={handleCommentClick}
+                className="flex items-center hover:text-purple-600 transition-colors group/comment"
+              >
+                <div className="p-1 rounded group-hover/comment:bg-purple-50 transition-colors">
+                  <MessageCircle className="w-4 h-4" />
                 </div>
-                <span className="font-semibold text-yellow-700">
-                  {formatNumber(trend.totalRewards)}
-                </span>
+                <span className="font-semibold">{formatNumber(trend.commentCount || 0)}</span>
+              </button>
+
+              {/* Views */}
+              <div className="flex items-center">
+                <div className="p-1 rounded">
+                  <Eye className="w-4 h-4" />
+                </div>
+                <span className="font-semibold">{formatNumber(trend.views || 0)}</span>
               </div>
-            )}
+
+              {/* Rewards */}
+              {trend.totalRewards > 0 && (
+                <button 
+                  onClick={handleRewardClick}
+                  className="flex items-center gap-2 hover:text-yellow-600 transition-colors group/reward"
+                >
+                  <div className="p-1 rounded group-hover/reward:bg-yellow-50 transition-colors">
+                    <Award className="w-4 h-4" />
+                  </div>
+                  <span className="font-semibold text-yellow-700">
+                    {formatNumber(trend.totalRewards)}
+                  </span>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Right side - Actions */}
-          <div className="flex items-center gap-2">
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <Share2 className="w-4 h-4 text-gray-500" />
+          <div className="flex items-center gap-1">
+            <button 
+              onClick={handleBookmarkClick}
+              className="p-2 hover:bg-purple-100 rounded-lg transition-colors"
+              title="Save"
+            >
+              <Bookmark className="w-4 h-4 text-purple-500" />
             </button>
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <MoreHorizontal className="w-4 h-4 text-gray-500" />
+            <button 
+              onClick={handleShareClick}
+              className="p-2 hover:bg-purple-100 rounded-lg transition-colors"
+              title="Share"
+            >
+              <Share2 className="w-4 h-4 text-purple-500" />
+            </button>
+            <button 
+              onClick={handleRewardClick}
+              className="p-2 hover:bg-purple-100 rounded-lg transition-colors"
+              title="Reward"
+            >
+              <Award className="w-4 h-4 text-purple-500" />
+            </button>
+            <button className="p-2 hover:bg-purple-100 rounded-lg transition-colors">
+              <Flag className="w-4 h-4 text-purple-500" />
+            </button>
+            <button className="p-2 hover:bg-purple-100 rounded-lg transition-colors">
+              <MoreHorizontal className="w-4 h-4 text-purple-500" />
             </button>
           </div>
         </div>

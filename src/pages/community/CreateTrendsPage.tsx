@@ -128,7 +128,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   return (
     <PageContainer>
-      <div className="max-w-4xl mx-auto py-8 px-4">
+      <div className="max-w-6xl mx-auto py-8 px-4">
         {/* Header */}
         <div className="mb-8">
           <button
@@ -161,7 +161,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               <select
                 value={formData.community}
                 onChange={(e) => handleInputChange('community', e.target.value)}
-                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
                   errors.community ? 'border-red-300' : 'border-gray-300'
                 }`}
               >
@@ -188,7 +188,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 value={formData.title}
                 onChange={(e) => handleInputChange('title', e.target.value)}
                 placeholder="Enter a compelling title for your trend..."
-                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
                   errors.title ? 'border-red-300' : 'border-gray-300'
                 }`}
                 maxLength={300}
@@ -212,7 +212,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 onChange={(e) => handleInputChange('content', e.target.value)}
                 placeholder="Share your thoughts, ideas, or questions..."
                 rows={12}
-                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none ${
                   errors.content ? 'border-red-300' : 'border-gray-300'
                 }`}
                 maxLength={40000}
@@ -238,14 +238,14 @@ const handleSubmit = async (e: React.FormEvent) => {
                   onChange={(e) => handleInputChange('newTag', e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Add a tag..."
-                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   maxLength={20}
                 />
                 <button
                   type="button"
                   onClick={handleAddTag}
                   disabled={!formData.newTag.trim()}
-                  className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -257,13 +257,13 @@ const handleSubmit = async (e: React.FormEvent) => {
                   {formData.tags.map((tag, index) => (
                     <div
                       key={index}
-                      className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center gap-2 text-sm"
+                      className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full flex items-center gap-2 text-sm"
                     >
                       #{tag}
                       <button
                         type="button"
                         onClick={() => handleRemoveTag(tag)}
-                        className="hover:text-blue-600 transition-colors"
+                        className="hover:text-purple-600 transition-colors"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
@@ -292,7 +292,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               <button
                 type="submit"
                 disabled={creatingTrend}
-                className="flex-1 py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                className="flex-1 py-3 px-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
               >
                 {creatingTrend ? 'Creating...' : 'Create Trend'}
               </button>
@@ -301,9 +301,9 @@ const handleSubmit = async (e: React.FormEvent) => {
         </div>
 
         {/* Help Section */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="font-semibold text-blue-900 mb-2">💡 Tips for creating great trends</h3>
-          <ul className="text-blue-800 text-sm space-y-1">
+        <div className="mt-8 bg-purple-50 border border-purple-200 rounded-lg p-6">
+          <h3 className="font-semibold text-purple-900 mb-2">💡 Tips for creating great trends</h3>
+          <ul className="text-purple-800 text-sm space-y-1">
             <li>• Write clear and engaging titles that capture attention</li>
             <li>• Provide detailed context and background information</li>
             <li>• Use relevant tags to help others discover your trend</li>

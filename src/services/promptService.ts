@@ -141,38 +141,42 @@ createPrompt: async (formData: FormData): Promise<Prompt> => {
 
 
   // Update prompt
-  updatePrompt: async (id: string, updateData: FormData, images?: File[]): Promise<Prompt> => {
-    const formData = new FormData();
-    
-    // Append update data as individual fields (not as JSON)
-    Object.entries(updateData).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        if (Array.isArray(value)) {
-          // For arrays like tags, join them as comma-separated string
-          formData.append(key, value.join(','));
-        } else if (typeof value === 'boolean') {
-          // For booleans, convert to string
-          formData.append(key, value.toString());
-        } else {
-          formData.append(key, value.toString());
-        }
-      }
-    });
-    
-    // Append images if any
-    if (images) {
-      images.forEach(file => {
-        formData.append('images', file);
-      });
-    }
+updatePrompt: async (id: string, updateData: FormData): Promise<Prompt> => {
+  console.log('🔄 Updating prompt:', id);
+  console.log('📤 FormData entries:');
+  
+  // Log form data for debugging with proper typing
+  for (const [key, value] of (updateData as unknown as Iterable<[string, FormDataEntryValue]>)) {
+    console.log(`  ${key}:`, value);
+  }
 
-    const response = await promptApi.put(`/prompts/${id}`, formData, {
+  try {
+    const response = await promptApi.put(`/prompts/${id}`, updateData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
-    return response.data;
-  },
+    
+    console.log('✅ Update successful:', response.data);
+    return response.data.data; // Return the prompt data directly
+  } catch (error: unknown) {
+    console.error('❌ Update failed:', error);
+    
+    if (typeof error === 'object' && error !== null && 'response' in error) {
+      const axiosError = error as { 
+        response?: { 
+          data?: unknown;
+          status?: number;
+          statusText?: string;
+        } 
+      };
+      console.error('❌ Error details:', axiosError.response?.data);
+      console.error('❌ Error status:', axiosError.response?.status);
+    }
+    
+    throw error;
+  }
+},
 
 // Delete prompt
 deletePrompt: async (id: string): Promise<{ success: boolean; message: string }> => {

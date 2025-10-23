@@ -1,18 +1,7 @@
 // components/trends/RewardSection.tsx
 import React from 'react';
 import { Award, Crown, Star, Gem } from 'lucide-react';
-
-interface Reward {
-  _id: string;
-  user: {
-    username: string;
-    avatar?: string;
-  };
-  amount: number;
-  type: string;
-  message?: string;
-  createdAt: string;
-}
+import type { Reward, RewardType } from '../../../../types/trend';
 
 interface RewardSectionProps {
   rewards: Reward[];
@@ -20,13 +9,18 @@ interface RewardSectionProps {
 }
 
 const RewardSection: React.FC<RewardSectionProps> = ({ rewards, totalRewards }) => {
-  const getRewardIcon = (type: string) => {
-    switch (type) {
-      case 'gold': return <Crown className="w-4 h-4 text-yellow-600" />;
-      case 'silver': return <Gem className="w-4 h-4 text-gray-400" />;
-      case 'platinum': return <Award className="w-4 h-4 text-purple-500" />;
-      default: return <Star className="w-4 h-4 text-yellow-500" />;
+  const getRewardIcon = (rewardType: RewardType) => {
+    switch (rewardType.tier) { // Use tier instead of type
+      case 'legendary': return <Crown className="w-4 h-4 text-yellow-600" />;
+      case 'epic': return <Gem className="w-4 h-4 text-purple-500" />;
+      case 'rare': return <Award className="w-4 h-4 text-blue-500" />;
+      case 'common': 
+      default: return <Star className="w-4 h-4 text-gray-400" />;
     }
+  };
+
+  const getTierDisplayName = (rewardType: RewardType): string => {
+    return rewardType.displayName || rewardType.name;
   };
 
   return (
@@ -60,7 +54,10 @@ const RewardSection: React.FC<RewardSectionProps> = ({ rewards, totalRewards }) 
                   <span className="font-medium text-gray-800">
                     {reward.user.username}
                   </span>
-                  {getRewardIcon(reward.type)}
+                  {getRewardIcon(reward.rewardType)}
+                  <span className="text-sm text-gray-600">
+                    {getTierDisplayName(reward.rewardType)}
+                  </span>
                 </div>
                 {reward.message && (
                   <p className="text-sm text-gray-600 mt-1">{reward.message}</p>
