@@ -13,19 +13,8 @@ interface RecentPromptsProps {
 }
 
 const CreatedPromptsPage: React.FC<RecentPromptsProps> = () => {
-  const { 
-    prompts, 
-    loading, 
-    error, 
-    fetchPrompts, 
-    updatePrompt,
-    deletePrompt 
-  } = usePrompts({
-    limit: 10, // Fetch more prompts for the library view
-    sortBy: 'createdAt',
-    sortOrder: 'desc'
-  });
-  
+  const { prompts, loading, error, fetchUserPrompts, updatePrompt, deletePrompt } = usePrompts();
+    
   const navigate = useNavigate();
     
   const handleSearch = (query: string) => {
@@ -53,11 +42,7 @@ const CreatedPromptsPage: React.FC<RecentPromptsProps> = () => {
       toast.success('Prompt published successfully!');
       
       // Refresh the prompts to update the status
-      fetchPrompts({
-        limit: 10,
-        sortBy: 'createdAt',
-        sortOrder: 'desc'
-      });
+      fetchUserPrompts();
     } catch (error) {
       console.error('Failed to publish prompt:', error);
       toast.error('Failed to publish prompt');
@@ -75,11 +60,7 @@ const CreatedPromptsPage: React.FC<RecentPromptsProps> = () => {
       toast.success('Prompt moved to drafts!');
       
       // Refresh the prompts to update the status
-      fetchPrompts({
-        limit: 10,
-        sortBy: 'createdAt',
-        sortOrder: 'desc'
-      });
+      fetchUserPrompts();
     } catch (error) {
       console.error('Failed to unpublish prompt:', error);
       toast.error('Failed to unpublish prompt');
@@ -94,11 +75,7 @@ const CreatedPromptsPage: React.FC<RecentPromptsProps> = () => {
         toast.success('Prompt deleted successfully!');
         
         // Refresh the prompts to update the list
-        fetchPrompts({
-          limit: 10,
-          sortBy: 'createdAt',
-          sortOrder: 'desc'
-        });
+        fetchUserPrompts();
       } catch (error) {
         console.error('Failed to delete prompt:', error);
         toast.error('Failed to delete prompt');
@@ -107,8 +84,8 @@ const CreatedPromptsPage: React.FC<RecentPromptsProps> = () => {
   };
 
   // Filter prompts by status for better organization
-  const publishedPrompts = prompts.filter(prompt => prompt.isPublic && !prompt.isDraft);
-  const draftPrompts = prompts.filter(prompt => !prompt.isPublic && prompt.isDraft);
+  const publishedPrompts = prompts.filter(prompt => prompt.isPublic);
+  const draftPrompts = prompts.filter(prompt => prompt.isDraft);
 
   if (loading) {
     return (

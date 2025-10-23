@@ -17,7 +17,7 @@ const isAxiosError = (error: unknown): error is AxiosError => {
   return typeof error === 'object' && error !== null && 'message' in error;
 };
 
-export const usePrompts = (filters: PromptFilters = {}) => {
+export const usePrompts = () => {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,35 +28,75 @@ export const usePrompts = (filters: PromptFilters = {}) => {
     totalRecords: 0,
   });
 
-  // Use useCallback with proper dependencies - stringify filters for comparison
-  const fetchPrompts = useCallback(async (newFilters?: PromptFilters) => {
+  const fetchUserPrompts = useCallback(async (filters: PromptFilters = {}) => {
     try {
       setLoading(true);
       setError(null);
       
-      // Merge the default filters with any new filters passed
-      const mergedFilters = { ...filters, ...newFilters };
-      
-      const response = await promptService.getUserPrompts(mergedFilters);
+      const response = await promptService.getUserPrompts(filters);
+      console.log('User prompts response:', response);
       
       setPrompts(response.prompts || []);
       setPagination(response.pagination || {
-        current: 1,
-        total: 1,
-        count: 0,
-        totalRecords: 0,
+        current: response.current || 1,
+        total: response.totalPages || 1,
+        count: (response.prompts || []).length,
+        totalRecords: response.totalRecords || 0,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch prompts');
     } finally {
       setLoading(false);
     }
-  }, [JSON.stringify(filters)]); // Stringify filters to prevent unnecessary recreations
+  }, []);
 
-  // Auto-fetch only when filters change, not fetchPrompts
+  const getAllPrompts = useCallback(async (newFilters?: PromptFilters) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await promptService.getAllPrompts(newFilters || {});
+      console.log('All prompts response:', response);
+      
+      setPrompts(response.prompts || response.data || []);
+      setPagination(response.pagination || {
+        current: response.current || 1,
+        count: (response.prompts || response.data || []).length,
+        totalRecords: response.totalRecords || 0,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch prompts');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const getPublicPrompts = useCallback(async (filters: PromptFilters = {}) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await promptService.getPublicPrompts(filters);
+      console.log('Public prompts response:', response);
+      
+      setPrompts(response.prompts || []);
+      setPagination(response.pagination || {
+        current: response.current || 1,
+        total: response.totalPages || 1,
+        count: (response.prompts || []).length,
+        totalRecords: response.totalRecords || 0,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch public prompts');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Only call fetchUserPrompts on mount
   useEffect(() => {
-    fetchPrompts();
-  }, [fetchPrompts]);
+    fetchUserPrompts();
+  }, [fetchUserPrompts]);
 
   const createPrompt = async (formData: FormData): Promise<Prompt> => {
     try {
@@ -64,7 +104,6 @@ export const usePrompts = (filters: PromptFilters = {}) => {
       setPrompts(prev => [newPrompt, ...prev]);
       return newPrompt;
     } catch (err) {
-      // Provide more detailed error information
       let errorMessage = 'Failed to create prompt';
       
       if (isAxiosError(err) && err.response?.data?.error) {
@@ -113,10 +152,28 @@ export const usePrompts = (filters: PromptFilters = {}) => {
     try {
       const result = await promptService.upvotePrompt(id);
       setPrompts(prev => prev.map(prompt => 
-        prompt._id === id ? { ...prompt, upvotes: result.upvotes } : prompt
+        prompt._id === id ? { 
+          ...prompt, 
+          upvotes: result.upvotes,
+        } : prompt
       ));
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to upvote prompt');
+    }
+  };
+
+  const downvotePrompt = async (id: string): Promise<void> => {
+    try {
+      const result = await promptService.downvotePrompt(id);
+      setPrompts(prev => prev.map(prompt => 
+        prompt._id === id ? { 
+          ...prompt, 
+          upvotes: result.upvotes,
+          downvotes: result.downvotes,
+        } : prompt
+      ));
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to downvote prompt');
     }
   };
 
@@ -128,11 +185,63 @@ export const usePrompts = (filters: PromptFilters = {}) => {
     }
   };
 
-  const getPromptById = async (id: string): Promise<Prompt | undefined> => {
+  const getFavoritedPrompts = async (userId: string): Promise<Prompt[]> => {
     try {
-      return await promptService.getPromptById(id);
+      const response = await promptService.getUserFavoritePrompts(userId);
+      return response.prompts || [];
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to get favorited prompts');
+    }
+  };
+
+  const removePromptFromFavorites = async (id: string): Promise<void> => {
+    try {
+      await promptService.removePromptFromFavorites(id);
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to remove prompt from favorites');
+    }
+  };
+
+  const ratePrompt = async (id: string, rating: number): Promise<void> => {
+    try {
+      const result = await promptService.ratePrompt(id, rating);
+      setPrompts(prev => prev.map(prompt => 
+        prompt._id === id ? { 
+          ...prompt, 
+          rating: {
+            ...prompt.rating,
+            average: result.averageRating
+          }
+        } : prompt
+      ));
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to rate prompt');
+    }
+  };
+
+  const getPromptRating = async (id: string): Promise<{ averageRating: number; userRating?: number }> => {
+    try {
+      return await promptService.getPromptRating(id);
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to get prompt rating');
+    }
+  };
+
+  const getPromptById = async (id: string): Promise<Prompt> => {
+    try {
+      const response = await promptService.getPromptById(id);
+      return response.data;
     } catch (error) {
       throw new Error(error instanceof Error ? error.message : 'Failed to get prompt by ID');
+    }
+  };
+
+  const getUserPrompt = async (id: string): Promise<Prompt> => {
+    try {
+      const response = await promptService.getUserPrompt(id);
+      return response.data;
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Failed to get user prompt');
     }
   };
 
@@ -141,23 +250,31 @@ export const usePrompts = (filters: PromptFilters = {}) => {
     loading,
     error,
     pagination,
-    fetchPrompts,
+    fetchUserPrompts,
+    getAllPrompts,
+    getPublicPrompts,
     createPrompt,
     updatePrompt,
     deletePrompt,
     upvotePrompt,
+    downvotePrompt,
     favoritePrompt,
     incrementPromptViews,
     getPromptById,
+    getUserPrompt,
+    getFavoritedPrompts,
+    removePromptFromFavorites,
+    ratePrompt,
+    getPromptRating,
   };
 };
 
+// ... rest of your hooks remain the same
 export const useDashboardStats = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Wrap fetchStats in useCallback
   const fetchStats = useCallback(async () => {
     try {
       setLoading(true);
@@ -173,7 +290,7 @@ export const useDashboardStats = () => {
 
   useEffect(() => {
     fetchStats();
-  }, [fetchStats]); // Now fetchStats is stable due to useCallback
+  }, [fetchStats]);
 
   return {
     stats,
@@ -183,7 +300,6 @@ export const useDashboardStats = () => {
   };
 };
 
-// Hook for searching prompts
 export const useSearchPrompts = () => {
   const [results, setResults] = useState<Prompt[]>([]);
   const [loading, setLoading] = useState(false);
@@ -210,13 +326,11 @@ export const useSearchPrompts = () => {
   };
 };
 
-// Hook for favorite prompts
 export const useFavoritePrompts = (userId: string) => {
   const [favorites, setFavorites] = useState<Prompt[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Wrap fetchFavorites in useCallback
   const fetchFavorites = useCallback(async (filters: PromptFilters = {}) => {
     try {
       setLoading(true);
@@ -228,11 +342,13 @@ export const useFavoritePrompts = (userId: string) => {
     } finally {
       setLoading(false);
     }
-  }, [userId]); // Add userId as dependency
+  }, [userId]);
 
   useEffect(() => {
-    fetchFavorites();
-  }, [fetchFavorites]); // Now fetchFavorites is stable due to useCallback
+    if (userId) {
+      fetchFavorites();
+    }
+  }, [fetchFavorites, userId]);
 
   const addFavorite = async (promptId: string) => {
     try {

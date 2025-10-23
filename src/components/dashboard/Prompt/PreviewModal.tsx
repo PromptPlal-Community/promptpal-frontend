@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import type { MouseEvent } from "react";
 import { usePrompts } from "../../../hooks/usePrompts";
-import { X, Star, Eye } from "lucide-react";
+import { X, Star, Edit } from "lucide-react";
 import type { FormPromptData } from "../../../types/prompt";
 import toast from "react-hot-toast";
 
@@ -311,8 +311,8 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
             onClick={onClose}
             className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm text-purple-600 border border-purple-600 rounded-md hover:bg-purple-50 transition-colors"
           >
-            <Eye className="w-4 h-4" />
-            Close Preview
+            <Edit className="w-4 h-4" />
+            Edit
           </button>
         </div>
       </div>

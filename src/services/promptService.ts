@@ -6,7 +6,7 @@ import type {
   PromptFilters 
 } from '../types/prompt';
 
-const API_BASE_URL = 'https://promptpal-backend-j5gl.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://promptpal-backend-j5gl.onrender.com/api';
 
 // Helper function to get cookie value
 const getCookie = (name: string): string | null => {
@@ -90,19 +90,35 @@ export const authService = {
 
 export const promptService = {
   // Get user's prompts
-  getUserPrompts: async (filters: PromptFilters = {}): Promise<PaginatedResponse<Prompt>> => {
-    const response = await promptApi.get('/prompts', { params: filters });
+  getUserPrompts: async (filters = {}) => {
+    const response = await promptApi.get('/prompts', { 
+      params: filters 
+    });
     return response.data;
   },
 
+ getUserPrompt: async (id: string) => {
+    const response = await promptApi.get(`/prompts/${id}`);
+    return response.data;
+  },
+ 
+   getPublicPrompts: async (filters = {}) => {
+    const response = await promptApi.get('/prompts/public', { 
+      params: filters 
+    });
+    return response.data;
+  },
+ 
   // Get all prompts with filtering
   getAllPrompts: async (filters: PromptFilters = {}): Promise<PaginatedResponse<Prompt>> => {
     const response = await promptApi.get('/prompts/filtered', { params: filters });
+    console.log('getAllPrompts response:', response);
+    console.log('getAllPrompts response:', response.data);
     return response.data;
   },
 
   // Get prompt by ID
-  getPromptById: async (id: string): Promise<Prompt> => {
+  getPromptById: async (id: string) => {
     const response = await promptApi.get(`/prompts/${id}`);
     return response.data;
   },
@@ -188,11 +204,34 @@ deletePrompt: async (id: string): Promise<{ success: boolean; message: string }>
     return response.data;
   },
 
-  // Upvote prompt
-  upvotePrompt: async (id: string): Promise<{ upvotes: number }> => {
-    const response = await promptApi.post(`/prompts/${id}/upvote`);
-    return response.data;
-  },
+// Upvote prompt
+upvotePrompt: async (id: string): Promise<{ 
+  upvotes: number; 
+  userVote: string;
+}> => {
+  const userId = authService.getCurrentUserId();
+  if (!userId) {
+    throw new Error('User must be logged in to vote');
+  }
+
+  const response = await promptApi.post(`/prompts/${id}/upvote`, { userId });
+  return response.data;
+},
+
+// Downvote prompt
+downvotePrompt: async (id: string): Promise<{ 
+  upvotes: number; 
+  downvotes: number;
+  userVote: string;
+}> => {
+  const userId = authService.getCurrentUserId();
+  if (!userId) {
+    throw new Error('User must be logged in to vote');
+  }
+
+  const response = await promptApi.post(`/prompts/${id}/downvote`, { userId });
+  return response.data;
+},
 
   // Favorite prompt
   favoritePrompt: async (id: string): Promise<void> => {
@@ -221,6 +260,26 @@ deletePrompt: async (id: string): Promise<{ success: boolean; message: string }>
     const response = await promptApi.post(`/prompts/${id}/views`);
     return response.data;
   },
+
+  // get increment promt views
+  getPromptViews: async (id: string): Promise<{ views: number }> => {
+    const response = await promptApi.get(`/prompts/${id}/views`);
+    return response.data;
+  },
+
+  // Rate prompt
+  ratePrompt: async (id: string, rating: number): Promise<{ averageRating: number }> => {
+    const response = await promptApi.post(`/prompts/${id}/rate`, { rating });
+    return response.data;
+  },
+
+  // Get prompt rating
+  getPromptRating: async (id: string): Promise<{ averageRating: number; userRating?: number }> => {
+    const response = await promptApi.get(`/prompts/${id}/rating`);
+    return response.data;
+  },
+
+
 };
 
 // Dashboard service remains the same
@@ -233,10 +292,14 @@ export const dashboardService = {
         throw new Error('User not authenticated');
       }
       
+      // ✅ FIX: Use getUserPrompts instead of getAllPrompts to get only user's prompts
       const userPromptsResponse = await promptService.getUserPrompts({ limit: 100 });
+      console.log(userPromptsResponse)
       const userPrompts = userPromptsResponse.prompts || [];
       const pagination = userPromptsResponse.pagination || { totalRecords: userPrompts.length };
 
+      console.log('User prompts for dashboard:', userPrompts.length);
+      
       // Use safe access with optional chaining and default values
       const stats = {
         totalPrompts: pagination.totalRecords,
@@ -249,28 +312,34 @@ export const dashboardService = {
       };
 
       const categoryStats = userPrompts.reduce((acc: Record<string, { count: number; totalViews: number }>, prompt: Prompt) => {
-        // Try multiple possible property locations for category
         const category = prompt.category || 'Uncategorized';
         if (!acc[category]) {
           acc[category] = { count: 0, totalViews: 0 };
         }
         acc[category].count++;
-        // Try multiple possible property locations for views
-        acc[category].totalViews += (prompt.views || prompt.views || 0);
+        acc[category].totalViews += (prompt.views || 0);
         return acc;
       }, {});
 
-      const categories = Object.entries(categoryStats).map(([category, data]) => ({
+      const categories = (Object.entries(categoryStats) as [string, { count: number; totalViews: number }][]).map(([category, data]) => ({
         _id: category,
         count: data.count,
         totalViews: data.totalViews
       }));
 
+      // Sort recent prompts by creation date (newest first)
+      const recentPrompts = [...userPrompts]
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 5);
+
+      // Calculate weekly trend (last 7 days)
+      const weeklyTrend = calculateWeeklyTrend(userPrompts);
+
       return {
         stats,
         categories,
-        recentPrompts: userPrompts.slice(0, 5),
-        weeklyTrend: []
+        recentPrompts,
+        weeklyTrend
       };
     } catch (error) {
       console.error('Error in getDashboardStats:', error);
@@ -288,5 +357,34 @@ export const dashboardService = {
       };
     }
   },
+};
+
+// Helper function to calculate weekly trend
+const calculateWeeklyTrend = (prompts: Prompt[]) => {
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    return date.toISOString().split('T')[0]; // YYYY-MM-DD format
+  }).reverse();
+
+  return last7Days.map(date => {
+    const dayPrompts = prompts.filter(prompt => {
+      const promptDate = new Date(prompt.createdAt).toISOString().split('T')[0];
+      return promptDate === date;
+    });
+
+    const count = dayPrompts.length;
+    const views = dayPrompts.reduce((sum, prompt) => sum + (prompt.views || 0), 0);
+    const upvotes = dayPrompts.reduce((sum, prompt) => sum + (prompt.upvotes || 0), 0);
+    
+    return {
+      _id: date,
+      count,
+      date,
+      prompts: count,
+      views,
+      upvotes
+    };
+  });
 };
 export default promptService;

@@ -1,6 +1,6 @@
 // components/dashboard/Sidebar.tsx
 import React, { useState, useEffect } from 'react';
-import { FaHome, FaBook, FaFolderOpen, FaHeart, FaUserCircle, FaPen, FaCrown } from 'react-icons/fa';
+import { FaHome, FaBook, FaFolderOpen, FaHeart, FaUserCircle, FaCrown } from 'react-icons/fa';
 import type { NavItem } from '../../../types/dashboard';
 import type { User } from '../../../types/auth';
 import promptPalLogo from "/prompt-pal-logo.png"
@@ -56,12 +56,14 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const navItems: NavItem[] = [
     { name: 'Workspace', icon: <FaHome />, key: 'workspace' },
-    { name: 'Library', icon: <FaBook />, key: 'promptpal-library' },
-    { name: 'Created Prompts', icon: <FaFolderOpen />, key: 'created-prompt' },
-    { name: 'Create New Prompt', icon: <FaPen />, key: 'create-new-prompt' },
+    { name: 'Prompt Library', icon: <FaBook />, key: 'promptpal-library' },
+    { name: 'My Prompts', icon: <FaFolderOpen />, key: 'created-prompt' },
+    // { name: 'Create New Prompt', icon: <FaPen />, key: 'create-new-prompt' },
     { name: 'Favorites', icon: <FaHeart />, key: 'favorites' },
     { name: 'Community', icon: <FaUserCircle />, key: 'community' },
     { name: 'Settings', icon: <FaUserCircle />, key: 'settings' },
+    { name: 'Create Community', icon: <FaUserCircle />, key: 'create-community' },
+
   ];
 
   useEffect(() => {
@@ -137,8 +139,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           />
         </div>
 
-        {/* Navigation Items - Matching MobileNav styling */}
-        <nav className="flex-1 p-3 space-y-1">
+        {/* Navigation Items */}
+        <nav className=" p-4 ">
           {navItems.map((item) => (
             <button
               key={item.key}
@@ -146,10 +148,10 @@ const Sidebar: React.FC<SidebarProps> = ({
               onMouseEnter={() => setHovered?.(item.key)}
               onMouseLeave={() => setHovered?.(null)}
               className={`
-                flex items-center gap-3 w-full px-3 py-3 rounded-xl transition-all duration-200 group
+                flex items-center gap-2 w-full px-3 py-3 rounded-xl transition-all duration-200 group
                 ${activeItem === item.key 
                   ? 'bg-[#270450] text-white shadow-lg transform scale-105' 
-                  : 'text-gray-700 hover:bg-gray-100 hover:text-[#270450] hover:shadow-md'
+                  : 'text-gray-700 hover:bg-purple-100 hover:text-[#270450] hover:shadow-md'
                 }
               `}
             >
@@ -205,7 +207,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   {/* User Profile Section - Matching MobileNav */}
         <div className="p-4 border-gray-100 bg-gray-200 border-t rounded-t-2xl shadow-2xl">
           {!loading && user && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <button 
                 onClick={handleUserAvatarClick}
                 className="w-12 h-12 flex items-center justify-center rounded-full bg-[#270450] text-white font-bold text-lg shadow-sm hover:bg-[#270450]/90 transition-colors cursor-pointer"

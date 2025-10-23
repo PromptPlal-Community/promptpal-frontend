@@ -193,6 +193,7 @@ export interface DashboardStats {
 
 // API Response types
 export interface PaginationInfo {
+  data: Prompt[];
   current: number;
   total: number;
   count: number;
@@ -200,15 +201,26 @@ export interface PaginationInfo {
 }
 
 export interface PaginatedResponse<T> {
+  data: T[];
   prompts: T[];
   pagination: PaginationInfo;
+    current: number;
+  total: number;
+  count: number;
+  totalRecords: number;
 }
 
 export interface PromptFilters {
   page?: number;
   limit?: number;
   category?: string;
-  status?: 'published' | 'draft' | 'private' | 'all';
+  isPublic?: boolean;
+  isDraft?: boolean;
+  authorId?: string;
+  communityId?: string;
+  tag?: string;
+  dateFrom?: string;
+  dateTo?: string;
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
@@ -368,4 +380,23 @@ export interface InputWithCountProps {
   placeholder?: string;
   label?: string;
   type?: string;
+}
+
+
+export interface PromptCardProps {
+  prompt: Prompt;
+  onLike?: () => void;
+  onDislike?: () => void;
+  onFavorite?: () => void;
+  onDownload?: () => void;
+  onCopy?: () => void;
+  onView?: () => void;
+  onShare?: () => void;
+  onRate?: () => void;
+  interactions?: {
+    liked?: boolean;
+    favorited?: boolean;
+    disliked?: boolean;
+  };
+  className?: string;
 }

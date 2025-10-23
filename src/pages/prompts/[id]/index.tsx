@@ -92,7 +92,7 @@ const getIconFromPrompt = (prompt: Prompt) => {
 const PromptDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { prompts, loading, upvotePrompt, favoritePrompt } = usePrompts(); // Removed unused 'error'
+  const { prompts, loading, upvotePrompt, favoritePrompt } = usePrompts();
   const [prompt, setPrompt] = useState<Prompt | null>(null);
   const [copied, setCopied] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -215,7 +215,7 @@ const handleFavorite = async () => {
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Prompt Not Found</h1>
           <p className="text-gray-600 mb-6">The prompt you're looking for doesn't exist or has been removed.</p>
           <Link 
-            to="/dashboard/library"
+            to="/dashboard/promptpal-library"
             className="bg-[#270450] text-white px-6 py-2 rounded-lg hover:bg-[#270450]/90 transition-colors"
           >
             Back to Library
