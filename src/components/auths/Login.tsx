@@ -39,7 +39,6 @@ const Login: React.FC = () => {
     console.log("🔄 Starting Google login...");
     try {
       await googleLogin();
-      console.log("✅ Google login completed successfully");
     } catch (error) {
       console.error("❌ Google login failed:", error);
     }

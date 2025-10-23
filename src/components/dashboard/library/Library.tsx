@@ -51,7 +51,7 @@ const Library: React.FC<LibraryProps> = ({
     prompts, 
     loading, 
     error, 
-    getAllPrompts,
+    getPublicPrompts,
     pagination, 
     upvotePrompt,
     downvotePrompt,
@@ -81,14 +81,14 @@ useEffect(() => {
       };
       
       console.log('Fetching public prompts with filters:', filters);
-      await getAllPrompts(filters);  // Use getAllPrompts
+      await getPublicPrompts(filters);
     } catch (error) {
       console.error('Error fetching public prompts:', error);
     }
   };
 
     loadPrompts();
-  }, [searchQuery, selectedCategory, currentPage, getAllPrompts]);  // Updated dependency
+  }, [searchQuery, selectedCategory, currentPage, getPublicPrompts]); 
 
   // Handle search with debouncing
   useEffect(() => {
