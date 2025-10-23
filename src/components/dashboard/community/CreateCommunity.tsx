@@ -11,7 +11,7 @@ import {
   Globe,
   Lock
 } from 'lucide-react';
-import { useCommunities } from '../hooks/useCommunities';
+import { useCommunities } from '../../../hooks/useCommunity';
 
 interface CreateCommunityModalProps {
   isOpen: boolean;
@@ -146,15 +146,16 @@ const CreateCommunityModal: React.FC<CreateCommunityModalProps> = ({
         // Navigate to the new community
         navigate(`/communities/${newCommunity._id}`);
       }
-    } catch (error: any) {
-      console.error('Failed to create community:', error);
-      if (error.message?.includes('already exists')) {
-        setErrors({ name: 'Community name already exists' });
-      } else {
-        setErrors({ submit: 'Failed to create community. Please try again.' });
-      }
+    } catch (error: unknown) { // Fix: Remove explicit any type
+    console.error('Failed to create community:', error);
+    
+    if (error instanceof Error && error.message?.includes('already exists')) {
+      setErrors({ name: 'Community name already exists' });
+    } else {
+      setErrors({ submit: 'Failed to create community. Please try again.' });
     }
-  };
+  }
+};
 
   const handleClose = () => {
     setFormData({

@@ -118,6 +118,7 @@ const CreateCommunityPage: React.FC = () => {
         name: formData.name,
         description: formData.description,
         isPublic: formData.isPublic,
+        rules: formData.rules.map(rule => ({ title: rule, description: '' })),
         tags: formData.tags
       });
 
@@ -125,15 +126,17 @@ const CreateCommunityPage: React.FC = () => {
         // Navigate to the new community
         navigate(`/communities/${newCommunity._id}`);
       }
-    } catch (error: any) {
-      console.error('Failed to create community:', error);
-      if (error.message?.includes('already exists')) {
-        setErrors({ name: 'Community name already exists' });
-      } else {
-        setErrors({ submit: 'Failed to create community. Please try again.' });
-      }
+    } catch (error: unknown) { // Fix: Remove explicit any type
+    console.error('Failed to create community:', error);
+    
+    // Type-safe error handling
+    if (error instanceof Error && error.message?.includes('already exists')) {
+      setErrors({ name: 'Community name already exists' });
+    } else {
+      setErrors({ submit: 'Failed to create community. Please try again.' });
     }
-  };
+  }
+};
 
   const handleCancel = () => {
     navigate(-1); // Go back to previous page
