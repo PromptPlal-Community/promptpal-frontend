@@ -1,4 +1,4 @@
-// components/layout/Grid.tsx
+
 import React from 'react';
 
 interface GridProps {

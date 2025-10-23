@@ -1,19 +1,18 @@
-import generateAIPromptImage from "../../assets/images/generate-image.png"
-
+import generateAIPromptImage from "../../assets/images/about.png";
 
 function About() {
   return (
-    <section className="py-16 bg-white text-gray-800">
-      <div className="width container mx-auto px-6 text-center md:text-left grid md:grid-cols-2 gap-10 items-center">
+    <section className="py-16 bg-white text-gray-800" id="about">
+      <div className=" aboutText container mx-auto px-6 text-center md:text-left grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
         {/* Text */}
         <div>
           <h2 className="text-3xl font-bold text-[#270450] mb-4">
             What is Promptpal
           </h2>
           <p className="mb-4  text-lg">
-            PrompPal is your smart assistant for crafting and refining prompts.
-            Whether you’re a creator, marketer, or developer, PrompPal helps you
-            save time, improve output quality, and collaborate seamlessly.
+            PromptPal is your smart assistant for crafting and refining prompts.
+            Whether you’re a creator, marketer, or developer, PromptPal helps
+            you save time, improve output quality, and collaborate seamlessly.
           </p>
           <ul className="list-disc pl-6 space-y-2  text-lg">
             <li>
@@ -42,12 +41,11 @@ function About() {
         </div>
 
         {/* Placeholder Image */}
-        <div className="bg-gray-300 rounded-lg w-130 h-64 md:h-80 flex items-center justify-center">
+        <div className=" aboutImgDiv">
           <img
-          src={generateAIPromptImage}
-          alt="Generate AI Prompt"
-          className="flex h-80 w-110"
-          
+            src={generateAIPromptImage}
+            alt="Generate AI Prompt"
+            className="rounded-md"
           />
         </div>
       </div>

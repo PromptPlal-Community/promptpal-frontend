@@ -1,43 +1,42 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import promptPalLogo from '../../../public/prompt-pal-logo.png'
+import { HiOutlineMenu, HiOutlineX } from "react-icons/hi"; // 👈 Import icons
+import promptPalLogo from "../../../public/prompt-pal-logo.png";
 
-function Navbar() {
+interface NavbarProps {
+  onMenuToggle?: (isOpen: boolean) => void;
+}
+
+function Navbar({ onMenuToggle }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleToggle = () => {
+    const newState = !isOpen;
+    setIsOpen(newState);
+    onMenuToggle?.(newState);
+  };
 
   return (
     <nav className="bg-white shadow-md fixed w-full top-0 z-50">
-      <div className="width container mx-auto px-4 py-3 flex items-center justify-between">
+      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
-        <Link
-          to="/"
-          className="text-2xl font-bold 
-        text-[#270450]/90 "
-        >
+        <Link to="/" className="text-2xl font-bold text-[#270450]/90">
           <img
             src={promptPalLogo}
             alt="Prompt-Pal Logo"
-            className="rounded-lg w-full h-auto max-w-md mx-auto"
+            className="rounded-lg w-full h-auto max-w-[140px]"
           />
         </Link>
 
         {/* Desktop Menu */}
         <div className="hidden md:flex space-x-6">
-          <Link to="/" className="hover:text-[#270450] ">
-            Discover
-          </Link>
-          <Link to="/" className="hover:text-[#270450] ">
-            Community
-          </Link>
-          <Link to="/" className="hover:text-[#270450] ">
-            Library
-          </Link>
-          <Link to="/" className="hover:text-[#270450] ">
-            Pricing
-          </Link>
+          <Link to="/" className="hover:text-[#270450]">Discover</Link>
+          <Link to="/" className="hover:text-[#270450]">Community</Link>
+          <Link to="/" className="hover:text-[#270450]">Library</Link>
+          <Link to="/" className="hover:text-[#270450]">Pricing</Link>
         </div>
 
-        {/* Buttons */}
+        {/* Desktop Buttons */}
         <div className="hidden md:flex space-x-4">
           <Link
             to="/login"
@@ -45,10 +44,9 @@ function Navbar() {
           >
             Login
           </Link>
-
           <Link
             to="/register"
-            className="px-4 py-2 rounded-lg bg-[#270450]/90  text-white hover:text-white hover:bg-[#270450]/80 "
+            className="px-4 py-2 rounded-lg bg-[#270450]/90 text-white hover:bg-[#270450]/80"
           >
             Sign Up
           </Link>
@@ -56,32 +54,28 @@ function Navbar() {
 
         {/* Mobile Toggle */}
         <button
-          className="md:hidden text-[#270450]/90 "
-          onClick={() => setIsOpen(!isOpen)}
+          className="text-[#270450]/90 md:hidden focus:outline-none"
+          onClick={handleToggle}
         >
-          ☰
+          {isOpen ? (
+            <HiOutlineX className="w-7 h-7" /> 
+          ) : (
+            <HiOutlineMenu className="w-7 h-7" /> 
+          )}
         </button>
       </div>
 
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden bg-white shadow-lg px-4 py-3 space-y-3">
-          <Link to="/" className="block hover:text-[#270450]/90 ">
-            Discover
-          </Link>
-          <Link to="/" className="block hover:text-[#270450]/90 ">
-            Community
-          </Link>
-          <Link to="/" className="block hover:text-[#270450]/90 ">
-            Library
-          </Link>
-          <Link to="/" className="block hover:text-[#270450]/90 ">
-            Pricing
-          </Link>
-          <button className="w-full px-4 py-2 rounded-lg text-[#270450]/90  hover:bg-purple-100">
+          <Link to="/" className="block hover:text-[#270450]/90">Discover</Link>
+          <Link to="/" className="block hover:text-[#270450]/90">Community</Link>
+          <Link to="/" className="block hover:text-[#270450]/90">Library</Link>
+          <Link to="/" className="block hover:text-[#270450]/90">Pricing</Link>
+          <button className="w-full px-4 py-2 rounded-lg text-[#270450]/90 hover:bg-purple-100">
             Login
           </button>
-          <button className="w-full px-4 py-2 rounded-lg bg-[#270450]/90  text-white hover:bg-[#270450]/90">
+          <button className="w-full px-4 py-2 rounded-lg bg-[#270450]/90 text-white hover:bg-[#270450]/90">
             Sign Up
           </button>
         </div>

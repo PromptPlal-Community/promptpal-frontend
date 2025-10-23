@@ -1,4 +1,4 @@
-// components/dashboard/Sidebar.tsx
+
 import React, { useState, useEffect } from 'react';
 import { FaHome, FaBook, FaFolderOpen, FaHeart, FaUserCircle, FaCrown } from 'react-icons/fa';
 import type { NavItem } from '../../../types/dashboard';
@@ -190,7 +190,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             
             <button
               onClick={handleUpgradeClick}
-              className="w-full bg-gradient-to-r from-[#270450] to-purple-700 text-white py-3 px-4 rounded-xl font-semibold text-sm hover:from-[#270450]/90 hover:to-purple-700/90 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-[#270450] to-[#270450]/70 text-white py-3 px-4 rounded-xl font-semibold text-sm hover:from-[#270450]/90 hover:to-purple-700/90 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
             >
               <FaCrown className="text-sm" />
               Upgrade Plan

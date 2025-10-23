@@ -50,6 +50,16 @@
   margin-top: 5%;
 }
 
+.loginImage {
+  width: 100%;
+  height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  object-fit: contain;
+  object-position: top;
+}
+
 .whyPp {
   display: flex;
   flex-wrap: wrap;
@@ -65,6 +75,8 @@
   display: flex;
   gap: 3%;
   padding: 2%;
+  justify-content: center;
+  align-items: center;
 }
 
 .whyPPImage {
@@ -74,9 +86,172 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  object-fit: cover;
+  object-position: top;
 }
 
 .whyPPText {
   width: 100%;
   margin-top: 4%;
+}
+
+#about {
+  width: 90%;
+  margin: auto;
+}
+
+.bannerImg {
+  width: 100%;
+  height: 500px;
+  object-fit: cover;
+}
+
+.aboutImgDiv img {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+}
+
+.pLibrary {
+  width: 90%;
+  margin: auto;
+}
+
+/* responsiveness */
+
+/* Mobile (default): 0px–639px */
+@media (max-width: 639px) {
+  .bannerImg {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+  }
+  .aboutImgDiv {
+    margin-top: 5%;
+    text-align: left;
+  }
+
+  .aboutImgDiv img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+  }
+
+  .aboutText {
+    text-align: left;
+  }
+
+  .text {
+    width: 100%;
+    margin: auto;
+    text-align: left;
+  }
+
+  .PPcard {
+    width: 100%;
+  }
+
+  .whyPp {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 3%;
+    border-radius: 20px;
+    gap: 3%;
+    padding-bottom: 5%;
+  }
+
+  .whyPPDiv {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 3%;
+    padding: 2%;
+    margin-top: 5%;
+  }
+
+  .whyPPImage {
+    width: 90%;
+    height: 200px;
+    margin: auto;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    object-fit: cover;
+  }
+
+  .whyPPText {
+    width: 90%;
+    margin: auto;
+    margin-top: 3%;
+  }
+
+  .text-90 {
+    width: 90%;
+    margin: auto;
+  }
+}
+
+/* Tablet (small screen) */
+@media (min-width: 640px) and (max-width: 767px) {
+  .aboutImgDiv {
+    margin-top: 10%;
+  }
+  .bannerImg {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+  }
+
+  .aboutImgDiv img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+  }
+
+  .text {
+    width: 100%;
+    margin: auto;
+    text-align: left;
+  }
+
+  .PPcard {
+    width: 100%;
+  }
+
+  .text-90 {
+    width: 90%;
+    margin: auto;
+  }
+}
+
+/* Small laptop */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .bannerImg {
+    width: 100%;
+    height: 500px;
+    object-fit: contain;
+  }
+
+  .loginImage {
+    width: 100%;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    object-fit: contain;
+    object-position: top;
+  }
+}
+
+/* Big laptop / desktop */
+@media (min-width: 1024px) and (max-width: 1279px) {
+}
+
+/* Extra large screens */
+@media (min-width: 1280px) {
 }

@@ -1,4 +1,4 @@
-// components/layout/Layout.tsx
+
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../dashboard/Sidebar';
 import MobileNav from '../dashboard/MobileNav';

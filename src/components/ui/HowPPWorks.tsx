@@ -4,6 +4,7 @@ import refineImage from "../../assets/images/refine.png";
 import testImage from "../../assets/images/test.png";
 import shareImage from "../../assets/images/share.png";
 import { FaArrowRight } from "react-icons/fa";
+import { FaArrowDown } from "react-icons/fa";
 
 function HowPPWorks() {
   return (
@@ -21,7 +22,7 @@ function HowPPWorks() {
           </p>
         </div>
 
-        <div className="flex flex-row gap-3 items-center justify-center mt-10">
+        <div className="flex flex-col md:flex-row gap-3 items-center justify-center mt-10">
           {/* Step 1 */}
           <HowPPWorksCard
             stepNumber={1}
@@ -29,11 +30,16 @@ function HowPPWorks() {
             description="Choose from PromptPal's curated templates or start fresh with your own idea."
             imagePlaceholder={createPromptImage}
             altPlaceholder="Create prompt interface"
+            className="PPcard"
           />
 
           <p className="mx-1">
-            <FaArrowRight />
-           </p>
+            {/*  right arrow on large screens*/}
+            <FaArrowRight className="hidden md:inline" />
+
+            {/* down arrow on mobile */}
+            <FaArrowDown className="inline md:hidden" />
+          </p>
 
           {/* Step 2 */}
           <HowPPWorksCard
@@ -42,10 +48,17 @@ function HowPPWorks() {
             description="Run variations and compare outputs to find the best-performing prompt."
             imagePlaceholder={refineImage}
             altPlaceholder="Refinement tools"
+            className="PPcard"
           />
+
           <p className="mx-1">
-            <FaArrowRight />
-           </p>
+            {/*  right arrow on large screens */}
+            <FaArrowRight className="hidden md:inline" />
+
+            {/* down arrow on mobile */}
+            <FaArrowDown className="inline md:hidden" />
+          </p>
+
           {/* Step 3 */}
           <HowPPWorksCard
             stepNumber={3}
@@ -53,10 +66,16 @@ function HowPPWorks() {
             description="Adjust tone, style, and clarity using smart refinement tools."
             imagePlaceholder={testImage}
             altPlaceholder="Testing interface"
+            className="PPcard"
           />
+
           <p className="mx-1">
-            <FaArrowRight />
-           </p>
+            {/* right arrow on large screens */}
+            <FaArrowRight className="hidden md:inline" />
+
+            {/* down arrow on mobile */}
+            <FaArrowDown className="inline md:hidden" />
+          </p>
 
           {/* Step 4 */}
           <HowPPWorksCard
@@ -66,6 +85,7 @@ function HowPPWorks() {
             imagePlaceholder={shareImage}
             altPlaceholder="Sharing options"
             showArrow={false}
+            className="PPcard"
           />
         </div>
       </div>

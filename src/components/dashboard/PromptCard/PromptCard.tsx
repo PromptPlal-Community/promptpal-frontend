@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
-import { 
-  Heart, 
-  Download, 
-  Eye, 
-  User, 
-  Star, 
-  Code, 
-  Palette, 
-  FileText, 
+import {
+  Heart,
+  Download,
+  Eye,
+  User,
+  Star,
+  Code,
+  Palette,
+  FileText,
   MessageSquare,
   Image,
   Bot,
@@ -17,21 +17,21 @@ import {
   Music,
   Video,
   BarChart3,
-  Languages
-} from 'lucide-react';
-import type { Prompt } from '../../../types/prompt';
+  Languages,
+} from "lucide-react";
+import type { Prompt } from "../../../types/prompt";
 
 // Define the type for category colors
-type CategoryColorKey = 
-  | 'Coding' 
-  | 'Design' 
-  | 'Writing' 
-  | 'Development' 
-  | 'AI' 
-  | 'Content' 
-  | 'Marketing' 
-  | 'Analytics' 
-  | 'Security';
+type CategoryColorKey =
+  | "Coding"
+  | "Design"
+  | "Writing"
+  | "Development"
+  | "AI"
+  | "Content"
+  | "Marketing"
+  | "Analytics"
+  | "Security";
 
 type CategoryColors = {
   [key in CategoryColorKey]: {
@@ -42,15 +42,31 @@ type CategoryColors = {
 };
 
 const categoryColors: CategoryColors = {
-  Coding: { bg: 'bg-violet-50', text: 'text-violet-900', badge: 'bg-violet-100' },
-  Design: { bg: 'bg-amber-50', text: 'text-amber-900', badge: 'bg-amber-100' },
-  Writing: { bg: 'bg-emerald-50', text: 'text-emerald-900', badge: 'bg-emerald-100' },
-  Development: { bg: 'bg-blue-50', text: 'text-blue-900', badge: 'bg-blue-100' },
-  AI: { bg: 'bg-cyan-50', text: 'text-cyan-900', badge: 'bg-cyan-100' },
-  Content: { bg: 'bg-green-50', text: 'text-green-900', badge: 'bg-green-100' },
-  Marketing: { bg: 'bg-pink-50', text: 'text-pink-900', badge: 'bg-pink-100' },
-  Analytics: { bg: 'bg-orange-50', text: 'text-orange-900', badge: 'bg-orange-100' },
-  Security: { bg: 'bg-red-50', text: 'text-red-900', badge: 'bg-red-100' },
+  Coding: {
+    bg: "bg-violet-50",
+    text: "text-violet-900",
+    badge: "bg-violet-100",
+  },
+  Design: { bg: "bg-amber-50", text: "text-amber-900", badge: "bg-amber-100" },
+  Writing: {
+    bg: "bg-emerald-50",
+    text: "text-emerald-900",
+    badge: "bg-emerald-100",
+  },
+  Development: {
+    bg: "bg-blue-50",
+    text: "text-blue-900",
+    badge: "bg-blue-100",
+  },
+  AI: { bg: "bg-cyan-50", text: "text-cyan-900", badge: "bg-cyan-100" },
+  Content: { bg: "bg-green-50", text: "text-green-900", badge: "bg-green-100" },
+  Marketing: { bg: "bg-pink-50", text: "text-pink-900", badge: "bg-pink-100" },
+  Analytics: {
+    bg: "bg-orange-50",
+    text: "text-orange-900",
+    badge: "bg-orange-100",
+  },
+  Security: { bg: "bg-red-50", text: "text-red-900", badge: "bg-red-100" },
 };
 
 // Better type guard that explicitly checks each key
@@ -64,9 +80,9 @@ const getColorScheme = (category: string) => {
     return categoryColors[category];
   }
   return {
-    bg: 'bg-gray-50',
-    text: 'text-gray-900',
-    badge: 'bg-gray-100',
+    bg: "bg-gray-50",
+    text: "text-gray-900",
+    badge: "bg-gray-100",
   };
 };
 
@@ -81,78 +97,139 @@ interface PromptForIcon {
 const getIconFromPrompt = (prompt: PromptForIcon) => {
   const lowerTitle = prompt.title.toLowerCase();
   const category = prompt.category.toLowerCase();
-  const aiTool = prompt.aiTool.map(t => t.toLowerCase());
-
+  const aiTool = prompt.aiTool.map((t) => t.toLowerCase());
 
   // Check title keywords first
-  if (lowerTitle.includes('react') || lowerTitle.includes('component') || lowerTitle.includes('javascript') || lowerTitle.includes('typescript')) {
+  if (
+    lowerTitle.includes("react") ||
+    lowerTitle.includes("component") ||
+    lowerTitle.includes("javascript") ||
+    lowerTitle.includes("typescript")
+  ) {
     return <Code className="w-4 h-4" />;
   }
-  if (lowerTitle.includes('design') || lowerTitle.includes('ui') || lowerTitle.includes('ux') || lowerTitle.includes('figma')) {
+  if (
+    lowerTitle.includes("design") ||
+    lowerTitle.includes("ui") ||
+    lowerTitle.includes("ux") ||
+    lowerTitle.includes("figma")
+  ) {
     return <Palette className="w-4 h-4" />;
   }
-  if (lowerTitle.includes('write') || lowerTitle.includes('blog') || lowerTitle.includes('article') || lowerTitle.includes('content')) {
+  if (
+    lowerTitle.includes("write") ||
+    lowerTitle.includes("blog") ||
+    lowerTitle.includes("article") ||
+    lowerTitle.includes("content")
+  ) {
     return <FileText className="w-4 h-4" />;
   }
-  if (lowerTitle.includes('chat') || lowerTitle.includes('assistant') || lowerTitle.includes('conversation')) {
+  if (
+    lowerTitle.includes("chat") ||
+    lowerTitle.includes("assistant") ||
+    lowerTitle.includes("conversation")
+  ) {
     return <MessageSquare className="w-4 h-4" />;
   }
-  if (lowerTitle.includes('image') || lowerTitle.includes('photo') || lowerTitle.includes('art') || lowerTitle.includes('graphic')) {
+  if (
+    lowerTitle.includes("image") ||
+    lowerTitle.includes("photo") ||
+    lowerTitle.includes("art") ||
+    lowerTitle.includes("graphic")
+  ) {
     return <Image className="w-4 h-4" />;
   }
-  if (lowerTitle.includes('ai') || lowerTitle.includes('machine learning') || lowerTitle.includes('neural')) {
+  if (
+    lowerTitle.includes("ai") ||
+    lowerTitle.includes("machine learning") ||
+    lowerTitle.includes("neural")
+  ) {
     return <Bot className="w-4 h-4" />;
   }
-  if (lowerTitle.includes('database') || lowerTitle.includes('sql') || lowerTitle.includes('query')) {
+  if (
+    lowerTitle.includes("database") ||
+    lowerTitle.includes("sql") ||
+    lowerTitle.includes("query")
+  ) {
     return <Database className="w-4 h-4" />;
   }
-  if (lowerTitle.includes('mobile') || lowerTitle.includes('app') || lowerTitle.includes('ios') || lowerTitle.includes('android')) {
+  if (
+    lowerTitle.includes("mobile") ||
+    lowerTitle.includes("app") ||
+    lowerTitle.includes("ios") ||
+    lowerTitle.includes("android")
+  ) {
     return <Smartphone className="w-4 h-4" />;
   }
-  if (lowerTitle.includes('security') || lowerTitle.includes('privacy') || lowerTitle.includes('encryption')) {
+  if (
+    lowerTitle.includes("security") ||
+    lowerTitle.includes("privacy") ||
+    lowerTitle.includes("encryption")
+  ) {
     return <Shield className="w-4 h-4" />;
   }
-  if (lowerTitle.includes('music') || lowerTitle.includes('audio') || lowerTitle.includes('song')) {
+  if (
+    lowerTitle.includes("music") ||
+    lowerTitle.includes("audio") ||
+    lowerTitle.includes("song")
+  ) {
     return <Music className="w-4 h-4" />;
   }
-  if (lowerTitle.includes('video') || lowerTitle.includes('film') || lowerTitle.includes('movie')) {
+  if (
+    lowerTitle.includes("video") ||
+    lowerTitle.includes("film") ||
+    lowerTitle.includes("movie")
+  ) {
     return <Video className="w-4 h-4" />;
   }
-  if (lowerTitle.includes('analytics') || lowerTitle.includes('data') || lowerTitle.includes('chart') || lowerTitle.includes('metrics')) {
+  if (
+    lowerTitle.includes("analytics") ||
+    lowerTitle.includes("data") ||
+    lowerTitle.includes("chart") ||
+    lowerTitle.includes("metrics")
+  ) {
     return <BarChart3 className="w-4 h-4" />;
   }
-  if (lowerTitle.includes('translation') || lowerTitle.includes('language')) {
+  if (lowerTitle.includes("translation") || lowerTitle.includes("language")) {
     return <Languages className="w-4 h-4" />;
   }
 
   // Check category
-  if (category.includes('coding') || category.includes('development')) {
+  if (category.includes("coding") || category.includes("development")) {
     return <Code className="w-4 h-4" />;
   }
-  if (category.includes('design')) {
+  if (category.includes("design")) {
     return <Palette className="w-4 h-4" />;
   }
-  if (category.includes('writing') || category.includes('content')) {
+  if (category.includes("writing") || category.includes("content")) {
     return <FileText className="w-4 h-4" />;
   }
-  if (category.includes('ai')) {
+  if (category.includes("ai")) {
     return <Bot className="w-4 h-4" />;
   }
-  if (category.includes('analytics')) {
+  if (category.includes("analytics")) {
     return <BarChart3 className="w-4 h-4" />;
   }
-  if (category.includes('security')) {
+  if (category.includes("security")) {
     return <Shield className="w-4 h-4" />;
   }
-  if (category.includes('marketing')) {
+  if (category.includes("marketing")) {
     return <MessageSquare className="w-4 h-4" />;
   }
 
   // Check AI tool
-  if (aiTool.includes('dall-e') || aiTool.includes('midjourney') || aiTool.includes('stable diffusion')) {
+  if (
+    aiTool.includes("dall-e") ||
+    aiTool.includes("midjourney") ||
+    aiTool.includes("stable diffusion")
+  ) {
     return <Image className="w-4 h-4" />;
   }
-  if (aiTool.includes('chatgpt') || aiTool.includes('gpt') || aiTool.includes('claude')) {
+  if (
+    aiTool.includes("chatgpt") ||
+    aiTool.includes("gpt") ||
+    aiTool.includes("claude")
+  ) {
     return <MessageSquare className="w-4 h-4" />;
   }
 
@@ -168,12 +245,12 @@ interface PromptCardProps {
   className?: string;
 }
 
-export default function PromptCard({ 
-  prompt, 
-  onLike, 
-  // onBookmark, 
+export default function PromptCard({
+  prompt,
+  onLike,
+  // onBookmark,
   // onDownload,
-  className = "" 
+  className = "",
 }: PromptCardProps) {
   // Use the helper function to safely get color scheme
   const colorScheme = getColorScheme(prompt.category);
@@ -200,27 +277,28 @@ export default function PromptCard({
 
   // Format category name for display
   const formatCategory = (category: string) => {
-    return category.split(' ').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-    ).join(' ');
+    return category
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
   };
 
   // Get difficulty color
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty.toLowerCase()) {
-      case 'beginner':
-        return 'bg-green-100 text-green-700';
-      case 'intermediate':
-        return 'bg-yellow-100 text-yellow-700';
-      case 'advanced':
-        return 'bg-red-100 text-red-700';
+      case "beginner":
+        return "bg-green-100 text-green-700";
+      case "intermediate":
+        return "bg-yellow-100 text-yellow-700";
+      case "advanced":
+        return "bg-red-100 text-red-700";
       default:
-        return 'bg-gray-100 text-gray-700';
+        return "bg-gray-100 text-gray-700";
     }
   };
 
   return (
-    <Link 
+    <Link
       to={`/prompts/${prompt._id}`}
       className={`${colorScheme.bg} rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 flex flex-col h-full group cursor-pointer ${className}`}
     >
@@ -228,7 +306,9 @@ export default function PromptCard({
         {/* Header with category and actions */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className={`${colorScheme.badge} px-3 py-1.5 rounded-lg flex items-center gap-2`}>
+            <div
+              className={`${colorScheme.badge} px-3 py-1.5 rounded-lg flex items-center gap-2`}
+            >
               {icon}
               <span className={`text-sm font-semibold ${colorScheme.text}`}>
                 {formatCategory(prompt.category)}
@@ -241,15 +321,19 @@ export default function PromptCard({
               className="p-1.5 text-gray-400 hover:text-red-500 transition-colors duration-200 rounded-lg hover:bg-white/50"
               title="Like prompt"
             >
-              <Heart 
-                className={`w-5 h-5 ${prompt.upvotedBy.length > 0 ? 'fill-red-500 text-red-500' : ''}`} 
+              <Heart
+                className={`w-5 h-5 ${
+                  prompt.upvotedBy.length > 0 ? "fill-red-500 text-red-500" : ""
+                }`}
               />
             </button>
           </div>
         </div>
 
         {/* Title and Description */}
-        <h3 className={`text-xl font-bold ${colorScheme.text} mb-3 group-hover:opacity-80 transition-colors line-clamp-2`}>
+        <h3
+          className={`text-xl font-bold ${colorScheme.text} mb-3 group-hover:opacity-80 transition-colors line-clamp-2`}
+        >
           {prompt.title}
         </h3>
         <p className="text-gray-600 mb-4 line-clamp-2 flex-1 leading-relaxed">
@@ -261,14 +345,22 @@ export default function PromptCard({
           <span className="bg-white px-3 py-1.5 rounded-lg text-sm font-medium text-gray-700 border border-gray-200">
             {prompt.aiTool}
           </span>
-          <span className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize ${getDifficultyColor(prompt.difficulty)}`}>
+          <span
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize ${getDifficultyColor(
+              prompt.difficulty
+            )}`}
+          >
             {prompt.difficulty}
           </span>
         </div>
 
         {/* Output Preview */}
-        <div className={`${colorScheme.badge} rounded-lg p-4 mb-4 group-hover:opacity-80 transition-colors`}>
-          <p className="text-sm font-semibold text-gray-600 mb-2">Output Preview:</p>
+        <div
+          className={`${colorScheme.badge} rounded-lg p-4 mb-4 group-hover:opacity-80 transition-colors`}
+        >
+          <p className="text-sm font-semibold text-gray-600 mb-2">
+            Output Preview:
+          </p>
           <p className="text-sm text-gray-700 line-clamp-3 leading-relaxed">
             {prompt.resultText || prompt.promptText}
           </p>
@@ -286,7 +378,9 @@ export default function PromptCard({
               </span>
             ))}
             {prompt.tags.length > 3 && (
-              <span className={`${colorScheme.badge} ${colorScheme.text} px-3 py-1.5 rounded-lg text-sm font-medium`}>
+              <span
+                className={`${colorScheme.badge} ${colorScheme.text} px-3 py-1.5 rounded-lg text-sm font-medium`}
+              >
                 +{prompt.tags.length - 3}
               </span>
             )}
@@ -297,7 +391,11 @@ export default function PromptCard({
         <div className="flex items-center justify-between pt-4 border-t border-gray-200/50 mt-auto">
           <div className="flex items-center gap-4 text-sm text-gray-600">
             <div className="flex items-center gap-1.5 font-medium">
-              <Heart className={`w-4 h-4 ${prompt.upvotedBy.length > 0 ? 'text-red-500' : ''}`} />
+              <Heart
+                className={`w-4 h-4 ${
+                  prompt.upvotedBy.length > 0 ? "text-red-500" : ""
+                }`}
+              />
               <span>{prompt.upvotes}</span>
             </div>
             <div className="flex items-center gap-1.5 font-medium">
@@ -315,7 +413,9 @@ export default function PromptCard({
           </div>
           <div className="flex items-center gap-2">
             <User className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-gray-700 font-semibold">{prompt.author.username}</span>
+            <span className="text-sm text-gray-700 font-semibold">
+              {prompt.author.username}
+            </span>
           </div>
         </div>
       </div>

@@ -26,7 +26,7 @@ function PasswordVerification() {
         />
       </div>
 
-      <div className="md:w-3/5 w-full mt-15 flex flex-col items-center justify-center">
+      <div className="w-full md:w-3/5 flex flex-col items-center justify-center min-h-screen py-6 md:py-8 px-4 md:px-8">
         <div className="p-8 w-full max-w-md text-center">
           <h2 className="text-2xl font-bold text-[#270450] mb-4">
             Email Confirmation

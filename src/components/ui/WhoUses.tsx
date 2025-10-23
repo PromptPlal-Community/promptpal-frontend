@@ -23,12 +23,12 @@ function WhoUses() {
       <div className=" mt-8 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
         {/* Card 1 */}
         <div className="p-6 flex flex-col items-center">
-          <div className="w-full h-40 bg-gray-200 rounded-xl mb-6 flex items-center justify-center">
+          <div className="w-full   rounded-xl mb-3 flex items-center justify-center">
             <img src={contentCreatorImage} alt="save time with prompt-pal"
-              className="h-50 w-full"
+              className="whyPPImage"
             />
           </div>
-          <div>
+          <div className="text-90">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
               Content Creators & Writers
             </h3>
@@ -41,13 +41,13 @@ function WhoUses() {
 
         {/* Card 2 */}
         <div className=" p-6 flex flex-col items-center">
-          <div className="w-full h-40 bg-gray-200 rounded-xl mb-6 flex items-center justify-center">
+          <div className="w-full rounded-xl mb-3 flex items-center justify-center">
             <img src={designerImage} alt="save time with prompt-pal"
-              className="h-50 w-full"
+              className="whyPPImage"
             />
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+          <div className="text-90">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2 ">
               Designers & Visual Artists
             </h3>
             <p className="text-gray-600 text-sm">
@@ -59,16 +59,16 @@ function WhoUses() {
 
         {/* Card 3 */}
         <div className=" p-6 flex flex-col items-center">
-          <div className="w-full h-40 bg-gray-200 rounded-xl mb-6 flex items-center justify-center">
+          <div className="w-full rounded-xl mb-3 flex items-center justify-center">
             <img src={marketingImage} alt="save time with prompt-pal"
-              className="h-50 w-full"
+              className="whyPPImage"
             />
           </div>
-          <div>
+          <div className="text-90">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
               Marketing Teams & Agencies
             </h3>
-            <p className="text-gray-600 text-sm">
+            <p className=" text-sm">
               Collaborate on prompts to keep campaigns aligned, test messaging
               variations, and save time.
             </p>
@@ -77,12 +77,12 @@ function WhoUses() {
 
         {/* Card 4 */}
         <div className=" p-6 flex flex-col items-center">
-          <div className="w-full h-40 bg-gray-200 rounded-xl mb-6 flex items-center justify-center">
+          <div className="w-full rounded-xl mb-3 flex items-center justify-center">
             <img src={developerImage} alt="save time with prompt-pal"
-              className="h-50 w-full"
+              className="whyPPImage"
             />
           </div>
-          <div>
+          <div className="text-90">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
               Developers & AI Enthusiasts
             </h3>
