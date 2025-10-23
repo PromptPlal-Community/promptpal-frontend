@@ -4,9 +4,10 @@ import { Section } from '../components/layout/Section';
 import { Grid, Card, CardContent } from '../components/layout/Grid';
 import { useNavigate } from 'react-router-dom';
 import { useTrends } from '../hooks/useTrends';
-// import { useCommunities } from '../hooks/useCommunities';
+import { useCommunities } from '../hooks/useCommunity'; // Uncomment this
 import TrendCard from '../components/dashboard/community/trends/TrendCard';
 import { Search, Plus, Filter } from 'lucide-react';
+import type { Community } from '../types/trend'; // Import the type
 
 interface CommunityPageProps {
   onViewAll?: () => void;
@@ -15,7 +16,7 @@ interface CommunityPageProps {
 
 const CommunityPage: React.FC<CommunityPageProps> = () => {
   const { trends, loading, error, getTrends } = useTrends();
-  // const { communities } = useCommunities();
+  const { communities } = useCommunities(); // Uncomment this
   const navigate = useNavigate();
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,11 +33,10 @@ const CommunityPage: React.FC<CommunityPageProps> = () => {
   }, [getTrends, sortBy, selectedCommunity]);
 
   const handleViewTrend = (trendId: string) => {
-    navigate(`/trends/${trendId}`);
+    navigate(`/dashboard/trends/${trendId}`);
   };
 
   const handleUpvote = async (trendId: string) => {
-    // Upvote logic is handled within the TrendCard component
     console.log('Upvoting trend:', trendId);
   };
 
@@ -60,6 +60,12 @@ const CommunityPage: React.FC<CommunityPageProps> = () => {
     trend.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
     trend.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  // Find community name for display
+  const getCommunityName = (communityId: string): string => {
+    const community = communities.find((c: Community) => c._id === communityId);
+    return community?.name || 'Unknown Community';
+  };
 
   if (loading) {
     return (
@@ -174,7 +180,7 @@ const CommunityPage: React.FC<CommunityPageProps> = () => {
           {showFilters && (
             <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Community Filter
+                {/* Community Filter */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Community
@@ -185,13 +191,13 @@ const CommunityPage: React.FC<CommunityPageProps> = () => {
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   >
                     <option value="">All Communities</option>
-                    {communities.map(community => (
+                    {communities.map((community: Community) => (
                       <option key={community._id} value={community._id}>
                         {community.name}
                       </option>
                     ))}
                   </select>
-                </div> */}
+                </div>
 
                 {/* Sort Filter */}
                 <div>
@@ -229,89 +235,87 @@ const CommunityPage: React.FC<CommunityPageProps> = () => {
         </div>
 
         <Grid cols={1}>
-          <CardContent>
-            <div className="lg:col-span-2 rounded-lg">  
-              {/* Trends Count */}
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  {filteredTrends.length} {filteredTrends.length === 1 ? 'Trend' : 'Trends'} Found
-                </h3>
-                
-                {/* Active Filters Badge
-                {(selectedCommunity || searchQuery) && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <span>Active filters:</span>
-                    {selectedCommunity && (
-                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                        Community: {communities.find(c => c._id === selectedCommunity)?.name}
-                      </span>
-                    )}
-                    {searchQuery && (
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
-                        Search: "{searchQuery}"
-                      </span>
-                    )}
-                  </div>
-                )} */}
-              </div>
-
-              {/* Trends List */}
-              <div className="space-y-6">
-                {filteredTrends.map((trend) => (
-                  <TrendCard
-                    key={trend._id}
-                    trend={trend}
-                    onViewTrend={handleViewTrend}
-                    onUpvote={handleUpvote}
-                    onComment={handleComment}
-                    showCommunity={true}
-                  />
-                ))}
-              </div>
-
-              {/* Empty State */}
-              {filteredTrends.length === 0 && (
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-4">📊</div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                    {searchQuery || selectedCommunity ? 'No Matching Trends Found' : 'No Trends Yet'}
+              <div className="lg:col-span-2 rounded-lg">  
+                {/* Trends Count */}
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Found {filteredTrends.length} {filteredTrends.length === 1 ? 'Trend' : 'Trends'}
                   </h3>
-                  <p className="text-gray-600 mb-6">
-                    {searchQuery || selectedCommunity 
-                      ? 'Try adjusting your search criteria or filters to find more trends.'
-                      : 'Be the first to create a trend and start the conversation!'
-                    }
-                  </p>
-                  <div className="flex gap-4 justify-center">
-                    {searchQuery || selectedCommunity ? (
+                  
+                  {/* Active Filters Badge */}
+                  {(selectedCommunity || searchQuery) && (
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <span>Active filters:</span>
+                      {selectedCommunity && (
+                        <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                          Community: {getCommunityName(selectedCommunity)}
+                        </span>
+                      )}
+                      {searchQuery && (
+                        <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
+                          Search: "{searchQuery}"
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Trends List */}
+                <div className="space-y-6">
+                  {filteredTrends.map((trend) => (
+                    <TrendCard
+                      key={trend._id}
+                      trend={trend}
+                      onViewTrend={handleViewTrend}
+                      onUpvote={handleUpvote}
+                      onComment={handleComment}
+                      showCommunity={true}
+                    />
+                  ))}
+                </div>
+
+                {/* Empty State */}
+                {filteredTrends.length === 0 && (
+                  <div className="text-center py-12">
+                    <div className="text-6xl mb-4">📊</div>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                      {searchQuery || selectedCommunity ? 'No Matching Trends Found' : 'No Trends Yet'}
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      {searchQuery || selectedCommunity 
+                        ? 'Try adjusting your search criteria or filters to find more trends.'
+                        : 'Be the first to create a trend and start the conversation!'
+                      }
+                    </p>
+                    <div className="flex gap-4 justify-center">
+                      {searchQuery || selectedCommunity ? (
+                        <button 
+                          onClick={() => {
+                            setSearchQuery('');
+                            setSelectedCommunity('');
+                          }}
+                          className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors"
+                        >
+                          Clear Search
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={handleCreateTrend}
+                          className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+                        >
+                          Create First Trend
+                        </button>
+                      )}
                       <button 
-                        onClick={() => {
-                          setSearchQuery('');
-                          setSelectedCommunity('');
-                        }}
+                        onClick={() => navigate('/communities')}
                         className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors"
                       >
-                        Clear Search
+                        Browse Communities
                       </button>
-                    ) : (
-                      <button 
-                        onClick={handleCreateTrend}
-                        className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
-                      >
-                        Create First Trend
-                      </button>
-                    )}
-                    <button 
-                      onClick={() => navigate('/communities')}
-                      className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors"
-                    >
-                      Browse Communities
-                    </button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </CardContent>
+                )}
+              </div>
         </Grid>
       </Section>
     </PageContainer>

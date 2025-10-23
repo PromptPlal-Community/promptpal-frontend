@@ -1,6 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { FaHome, FaBook, FaFolderOpen, FaHeart, FaUserCircle, FaPen, FaTimes, FaBars, FaCrown } from 'react-icons/fa';
+import { 
+  FaHome, 
+  FaBook, 
+  FaFolderOpen, 
+  FaHeart, 
+  FaUserCircle, 
+  FaPen, 
+  FaTimes, 
+  FaBars, 
+  FaCrown,
+  FaUsers,
+  FaChevronDown,
+  FaChevronUp,
+  FaPlus
+} from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 import type { User } from '../../../types/auth';
+import { useCommunities } from '../../../hooks/useCommunity';
 import promptPalLogo from "/prompt-pal-logo.png"
 
 interface MobileNavProps {
@@ -47,17 +63,21 @@ const MobileNav: React.FC<MobileNavProps> = ({
   setHovered,
   onItemClick,
 }) => {
+  const navigate = useNavigate();
+  const { communities, getCommunities } = useCommunities();
   const [user, setUser] = useState<User | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [subscriptionLoading, setSubscriptionLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showCommunities, setShowCommunities] = useState(false);
+  const [communitiesLoading, setCommunitiesLoading] = useState(false);
 
   const navItems = [
     { name: "Workspace", icon: <FaHome />, key: "workspace" },
     { name: "Library", icon: <FaBook />, key: "promptpal-library" },
-    { name: 'Created Prompts', icon: <FaFolderOpen />, key: 'created-prompt' },
-    { name: 'Create New Prompt', icon: <FaPen />, key: "create-new-prompt" },
+    { name: 'My Prompts', icon: <FaFolderOpen />, key: 'created-prompt' },
+    // { name: 'Create New Prompt', icon: <FaPen />, key: "create-new-prompt" },
     { name: "Favorites", icon: <FaHeart />, key: "favorites" },
     { name: 'Community', icon: <FaUserCircle />, key: 'community' },
     { name: 'Settings', icon: <FaUserCircle />, key: 'settings' },
@@ -94,6 +114,23 @@ const MobileNav: React.FC<MobileNavProps> = ({
     fetchSubscription();
   }, [getCurrentUser]);
 
+  useEffect(() => {
+    if (showCommunities && isSidebarOpen) {
+      loadCommunities();
+    }
+  }, [showCommunities, isSidebarOpen]);
+
+  const loadCommunities = async () => {
+    try {
+      setCommunitiesLoading(true);
+      await getCommunities({ limit: 8 }); // Limit to 8 communities
+    } catch (error) {
+      console.error('Failed to load communities:', error);
+    } finally {
+      setCommunitiesLoading(false);
+    }
+  };
+
   const handleItemClick = (key: string) => {
     onItemClick(key);
     setIsSidebarOpen(false); // Close sidebar after clicking
@@ -104,12 +141,27 @@ const MobileNav: React.FC<MobileNavProps> = ({
   };
 
   const handleUpgradeClick = () => {
-    // Navigate to subscription page
     handleItemClick('subscription');
-    // Alternatively, you can use window.location or your routing method:
-    // window.location.href = '/subscription';
-    // or
-    // navigate('/subscription');
+  };
+
+  const handleCommunityClick = (communityId: string) => {
+    navigate(`/communities/${communityId}`);
+    setIsSidebarOpen(false);
+  };
+
+  const handleViewAllCommunities = () => {
+    navigate('/communities');
+    setIsSidebarOpen(false);
+  };
+
+  const handleCreateCommunity = () => {
+    navigate('/dashboard/create-community');
+    setIsSidebarOpen(false);
+  };
+
+  const handleCreateTrend = () => {
+    navigate('/dashboard/create-trends');
+    setIsSidebarOpen(false);
   };
 
   const getUserInitials = (name: string) => {
@@ -181,14 +233,14 @@ const MobileNav: React.FC<MobileNavProps> = ({
       {/* Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-none bg-opacity-50 z-50 lg:hidden transition-opacity duration-300"
+          className="fixed inset-0 bg-transparent bg-opacity-50 z-50 lg:hidden transition-opacity duration-300"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <div className={`
-        fixed top-0 left-0 h-full w-60 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden
+        fixed top-0 left-0 h-full w-80 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {/* Sidebar Header */}
@@ -210,7 +262,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
 
         {/* Navigation Items */}
         <div className="flex-1 overflow-y-auto">
-          <nav className="p-3 space-y-1">
+          <nav className="p-4 space-y-">
             {navItems.map((item) => (
               <button
                 key={item.key}
@@ -218,10 +270,10 @@ const MobileNav: React.FC<MobileNavProps> = ({
                 onMouseEnter={() => setHovered(item.key)}
                 onMouseLeave={() => setHovered(null)}
                 className={`
-                  flex items-center gap-3 w-full px-3 py-2 rounded-xl transition-all duration-200 group
+                  flex items-center gap-2 w-full px-4 py-2 rounded-xl transition-all duration-200 group
                   ${activeItem === item.key 
-                    ? 'bg-[#270450] text-white shadow-lg transform scale-105' 
-                    : 'text-gray-700 hover:bg-gray-100 hover:text-[#270450] hover:shadow-md'
+                    ? 'bg-[#270450] text-white shadow-lg' 
+                    : 'text-gray-700 hover:bg-purple-100 hover:text-[#270450] hover:shadow-md'
                   }
                 `}
               >
@@ -231,18 +283,97 @@ const MobileNav: React.FC<MobileNavProps> = ({
                 `}>
                   {item.icon}
                 </span>
-                <span className="font-medium text-left flex-1">{item.name}</span>
+                <span className="font-medium text-left flex-1 text-sm">{item.name}</span>
                 {activeItem === item.key && (
                   <div className="w-2 h-2 bg-white rounded-full"></div>
                 )}
               </button>
             ))}
+
+            {/* Communities Section */}
+            <div className="mt-2 pt-2 border-t border-gray-200">
+              <button
+                onClick={() => setShowCommunities(!showCommunities)}
+                className="flex items-center justify-between w-full px-4 py-3 rounded-xl transition-all duration-200 group hover:bg-purple-100 hover:text-[#270450]"
+              >
+                <div className="flex items-center gap-3">
+                  <FaUsers className="text-lg text-gray-700 group-hover:text-[#270450]" />
+                  <span className="font-medium text-sm">Discover Communities</span>
+                </div>
+                {showCommunities ? <FaChevronUp className="w-3 h-3" /> : <FaChevronDown className="w-3 h-3" />}
+              </button>
+
+              {showCommunities && (
+                <div className="mt-2 ml-4 space-y-2 max-h-48 overflow-y-auto">
+                  {communitiesLoading ? (
+                    <div className="space-y-2">
+                      {[...Array(4)].map((_, i) => (
+                        <div key={i} className="h-8 bg-gray-200 rounded animate-pulse"></div>
+                      ))}
+                    </div>
+                  ) : (
+                    <>
+                      {communities.slice(0, 6).map((community) => (
+                        <button
+                          key={community._id}
+                          onClick={() => handleCommunityClick(community._id)}
+                          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg transition-all duration-200 hover:bg-gray-100 text-sm text-gray-700 text-left"
+                        >
+                          <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-purple-600 text-xs font-semibold">
+                              {community.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{community.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {community.memberCount || 0} members
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                      
+                      {/* Show More Button */}
+                      {communities.length > 6 && (
+                        <button
+                          onClick={handleViewAllCommunities}
+                          className="w-full text-center py-2 text-sm text-purple-600 hover:text-purple-700 transition-colors font-medium"
+                        >
+                          View all communities
+                        </button>
+                      )}
+
+                      {/* Create Community Button */}
+                      <button
+                        onClick={handleCreateCommunity}
+                        className="flex items-center gap-2 w-full px-3 py-3 rounded-lg transition-all duration-200 hover:bg-purple-50 text-sm text-purple-600 font-medium mt-2 border border-purple-200"
+                      >
+                        <FaPlus className="w-4 h-4" />
+                        Create Community
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Quick Actions */}
+            <div className="mt-2 pt-2 border-t border-gray-200 space-y-2">
+              <button
+                onClick={handleCreateTrend}
+                className="flex items-center gap-3 w-full px-4 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-medium text-sm"
+              >
+                <FaPen className="text-lg" />
+                Create Trend
+              </button>
+              
+            </div>
           </nav>
         </div>
 
-        {/* Subscription Section - Added just before support */}
-        <div className="p-1 border-t border-gray-200 bg-gradient-to-br from-purple-50 to-white">
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-3">
+        {/* Subscription Section */}
+        <div className="p-4 border-t border-gray-200 bg-gradient-to-br from-purple-50 to-white">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
             <div className="flex items-center gap-3 mb-3">
               <div className={`p-2 rounded-lg bg-gradient-to-r ${subscription ? getPlanColor(subscription.plan) : 'from-gray-500 to-gray-700'}`}>
                 <FaCrown className="text-white text-sm" />
@@ -250,7 +381,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900 text-sm">Current Plan</h3>
                 {subscriptionLoading ? (
-                  <div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div>
+                  <div className="h-4 bg-gray-200 rounded w-16 animate-pulse mt-1"></div>
                 ) : (
                   <p className="text-lg font-bold text-gray-900">
                     {subscription?.plan || 'Free'}
@@ -261,7 +392,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
             
             <button
               onClick={handleUpgradeClick}
-              className="w-full bg-gradient-to-r from-[#270450] to-purple-700 text-white py-2.5 px-4 rounded-lg font-semibold text-sm hover:from-[#270450]/90 hover:to-purple-700/90 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-[#270450] to-purple-700 text-white py-2.5 px-4 rounded-lg font-semibold text-sm hover:from-[#270450]/90 hover:to-purple-700/90 transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
             >
               <FaCrown className="text-sm" />
               Upgrade Plan
@@ -274,42 +405,27 @@ const MobileNav: React.FC<MobileNavProps> = ({
             )}
           </div>
         </div>
-
-        {/* User Profile Section */}
-        <div className="p-3 border-b border-gray-100 bg-gray-50">
-          {!loading && user && (
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 flex items-center justify-center rounded-full bg-[#270450] text-white font-bold text-lg shadow-sm"
-                onClick={handleUserAvatarClick}>
-                {getUserInitials(user.name)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 truncate">{user.name}</p>
-                <p className="text-sm text-gray-600 truncate">{user.email}</p>
-              </div>
-            </div>
-          )}
-          {loading && (
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse"></div>
-              <div className="flex-1">
-                <div className="h-4 bg-gray-200 rounded w-24 mb-2 animate-pulse"></div>
-                <div className="h-3 bg-gray-200 rounded w-32 animate-pulse"></div>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
-
 
       {/* Bottom Navigation Bar - For quick access */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
         <div className="flex justify-around items-center px-2 py-3">
-          {navItems.slice(0, 2).map((item) => ( 
+          {[
+            { name: "Workspace", icon: <FaHome />, key: "workspace" },
+            { name: "Library", icon: <FaBook />, key: "promptpal-library" },
+          ].map((item) => ( 
             <div
               key={item.key}
               className="relative flex flex-col items-center"
-              onClick={() => handleItemClick(item.key)}
+              onClick={() => {
+                if (item.key === 'communities') {
+                  navigate('/communities');
+                } else if (item.key === 'trends') {
+                  navigate('/trends/create');
+                } else {
+                  handleItemClick(item.key);
+                }
+              }}
               onMouseEnter={() => setHovered(item.key)}
               onMouseLeave={() => setHovered(null)}
             >
@@ -323,7 +439,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
                 `}
               >
                 <span className="text-lg mb-1">{item.icon}</span>
-                <span className="text-xs font-medium truncate max-w-16">{item.name.split(' ')[0]}</span>
+                <span className="text-xs font-medium truncate max-w-16">{item.name}</span>
               </button>
               
               {/* Active indicator */}
@@ -355,7 +471,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
       </div>
 
       {/* Spacer to prevent content from being hidden behind fixed navs */}
-      <div className="lg:hidden h-32" />
+      <div className="lg:hidden h-20" />
     </>
   );
 };

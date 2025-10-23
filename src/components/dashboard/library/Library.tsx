@@ -7,7 +7,6 @@ import CategoryFilter from './CategoryFilter';
 import PromptCard from './PromptCard';
 import LoadMoreButton from './LoadMoreButton';
 import EmptyState from './EmptyState';
-import LoadingState from './LoadingState';
 
 interface LibraryProps {
   onLike?: (id: string) => void;
@@ -19,7 +18,6 @@ interface LibraryProps {
   onShare?: (id: string) => void;
 }
 
-// Define default categories that should always appear
 const DEFAULT_CATEGORIES = [
   'Finance',
   'Sales', 
@@ -49,12 +47,11 @@ const Library: React.FC<LibraryProps> = ({
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
   
-  // Use getPublicPrompts for the library to get only public prompts
   const { 
     prompts, 
     loading, 
     error, 
-    getAllPrompts,  // Changed from getAllPrompts to getPublicPrompts
+    getAllPrompts,
     pagination, 
     upvotePrompt,
     downvotePrompt,
@@ -341,13 +338,9 @@ useEffect(() => {
 
   const hasMore = pagination && pagination.current < pagination.total;
 
-  // Show loading state only on initial load, not on pagination
-  const showInitialLoading = loading && displayedPrompts.length === 0;
   const showPaginationLoading = loading && displayedPrompts.length > 0;
 
-  if (showInitialLoading) {
-    return <LoadingState />;
-  }
+
 
   if (error && displayedPrompts.length === 0) {
     return (

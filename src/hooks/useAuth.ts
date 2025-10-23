@@ -1,4 +1,5 @@
-import { useState } from 'react';
+// hooks/useAuth.ts
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
 import type { LoginCredentials, RegisterData } from '../types/auth';
@@ -8,9 +9,15 @@ import { useMessage } from './useMessage';
 export const useAuth = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [googleLoading, setGoogleLoading] = useState<boolean>(false);
+  const [user, setUser] = useState<User | null>(null); // Add user state
   const navigate = useNavigate();
   const { showMessage } = useMessage();
 
+  // Load user on mount
+  useEffect(() => {
+    const currentUser = authService.getCurrentUser();
+    setUser(currentUser);
+  }, []);
 
   const handleLogin = async (
     credentials: LoginCredentials,
@@ -40,6 +47,10 @@ export const useAuth = () => {
         showMessage(response.message || 'Login failed', 'error');
         return false;
       }
+
+      // Update user state after successful login
+      const currentUser = authService.getCurrentUser();
+      setUser(currentUser);
 
       showMessage(successMessage, 'success');
       setTimeout(() => navigate(redirectPath), 1500);
@@ -111,9 +122,11 @@ export const useAuth = () => {
   const logout = async (): Promise<void> => {
     try {
       await authService.logout();
+      setUser(null); // Clear user state
       showMessage('Logged out successfully', 'success');
     } catch (error: unknown) {
       console.error('Logout error:', error);
+      setUser(null); // Clear user state even on error
       showMessage('Logged out successfully', 'success');
     } finally {
       navigate('/login');
@@ -179,8 +192,7 @@ export const useAuth = () => {
     return authService.getCurrentUser();
   };
 
-
- const googleLogin = (): void => {
+  const googleLogin = (): void => {
     // Store current location to return to after login
     sessionStorage.setItem('returnUrl', window.location.pathname);
     
@@ -200,6 +212,10 @@ export const useAuth = () => {
         return false;
       }
 
+      // Update user state after successful Google login
+      const currentUser = authService.getCurrentUser();
+      setUser(currentUser);
+
       showMessage('Google login successful!', 'success');
 
       // Redirect to stored location or dashboard
@@ -217,6 +233,7 @@ export const useAuth = () => {
       setLoading(false);
     }
   };
+
   const googleRegister = (): void => {
     // Store current location to return to after registration
     sessionStorage.setItem('returnUrl', window.location.pathname);
@@ -236,6 +253,10 @@ export const useAuth = () => {
         showMessage(response.message || 'Failed to link Google account', 'error');
         return false;
       }
+
+      // Update user state after linking
+      const currentUser = authService.getCurrentUser();
+      setUser(currentUser);
 
       showMessage('Google account linked successfully!', 'success');
       return true;
@@ -260,6 +281,7 @@ export const useAuth = () => {
   return {
     loading,
     googleLoading,
+    user,
     login,
     register,
     logout,

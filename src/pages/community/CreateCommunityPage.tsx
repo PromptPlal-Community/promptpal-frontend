@@ -123,7 +123,6 @@ const CreateCommunityPage: React.FC = () => {
       });
 
       if (newCommunity) {
-        // Navigate to the new community
         navigate(`/communities/${newCommunity._id}`);
       }
     } catch (error: unknown) { // Fix: Remove explicit any type
@@ -144,7 +143,7 @@ const CreateCommunityPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <div className="max-w-4xl mx-auto py-8 px-4">
+      <div className="max-w-6xl mx-auto py-8 px-4">
         {/* Header */}
         <div className="mb-8">
           <button
@@ -181,7 +180,7 @@ const CreateCommunityPage: React.FC = () => {
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="community_name"
-                  className={`flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  className={`flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
                     errors.name ? 'border-red-300' : 'border-gray-300'
                   }`}
                   maxLength={50}
@@ -206,7 +205,7 @@ const CreateCommunityPage: React.FC = () => {
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 placeholder="Describe what your community is about, what kind of content is welcome, and what members can expect..."
                 rows={6}
-                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none ${
                   errors.description ? 'border-red-300' : 'border-gray-300'
                 }`}
                 maxLength={500}
@@ -228,7 +227,7 @@ const CreateCommunityPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label className={`relative border-2 rounded-lg p-4 cursor-pointer transition-all ${
                   formData.isPublic 
-                    ? 'border-blue-500 bg-blue-50' 
+                    ? 'border-purple-500 bg-purple-50' 
                     : 'border-gray-200 hover:border-gray-300'
                 }`}>
                   <input
@@ -239,7 +238,7 @@ const CreateCommunityPage: React.FC = () => {
                     className="sr-only"
                   />
                   <div className="flex items-center gap-3">
-                    <Globe className="w-5 h-5 text-blue-600" />
+                    <Globe className="w-5 h-5 text-purple-600" />
                     <div>
                       <div className="font-semibold text-gray-900">Public</div>
                       <div className="text-sm text-gray-600 mt-1">
@@ -251,7 +250,7 @@ const CreateCommunityPage: React.FC = () => {
 
                 <label className={`relative border-2 rounded-lg p-4 cursor-pointer transition-all ${
                   !formData.isPublic 
-                    ? 'border-blue-500 bg-blue-50' 
+                    ? 'border-purple-500 bg-purple-50' 
                     : 'border-gray-200 hover:border-gray-300'
                 }`}>
                   <input
@@ -287,14 +286,14 @@ const CreateCommunityPage: React.FC = () => {
                   onChange={(e) => handleInputChange('newRule', e.target.value)}
                   onKeyPress={(e) => handleKeyPress(e, 'rule')}
                   placeholder="Add a community rule..."
-                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   maxLength={100}
                 />
                 <button
                   type="button"
                   onClick={handleAddRule}
                   disabled={!formData.newRule.trim()}
-                  className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -340,14 +339,14 @@ const CreateCommunityPage: React.FC = () => {
                   onChange={(e) => handleInputChange('newTag', e.target.value)}
                   onKeyPress={(e) => handleKeyPress(e, 'tag')}
                   placeholder="Add a tag to help people find your community..."
-                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   maxLength={20}
                 />
                 <button
                   type="button"
                   onClick={handleAddTag}
                   disabled={!formData.newTag.trim()}
-                  className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -359,13 +358,13 @@ const CreateCommunityPage: React.FC = () => {
                   {formData.tags.map((tag, index) => (
                     <div
                       key={index}
-                      className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center gap-2 text-sm"
+                      className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full flex items-center gap-2 text-sm"
                     >
                       #{tag}
                       <button
                         type="button"
                         onClick={() => handleRemoveTag(tag)}
-                        className="hover:text-blue-600 transition-colors"
+                        className="hover:text-purple-600 transition-colors"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
@@ -394,7 +393,7 @@ const CreateCommunityPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={creatingCommunity}
-                className="flex-1 py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                className="flex-1 py-3 px-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
               >
                 {creatingCommunity ? 'Creating...' : 'Create Community'}
               </button>
@@ -403,9 +402,9 @@ const CreateCommunityPage: React.FC = () => {
         </div>
 
         {/* Help Section */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="font-semibold text-blue-900 mb-3">🏗️ Tips for creating a great community</h3>
-          <ul className="text-blue-800 text-sm space-y-2">
+        <div className="mt-8 bg-purple-50 border border-purple-200 rounded-lg p-6">
+          <h3 className="font-semibold text-purple-900 mb-3">🏗️ Tips for creating a great community</h3>
+          <ul className="text-purple-800 text-sm space-y-2">
             <li>• <strong>Choose a clear, descriptive name</strong> that reflects your community's purpose</li>
             <li>• <strong>Write a detailed description</strong> to help people understand what your community is about</li>
             <li>• <strong>Set clear rules</strong> to maintain a positive and respectful environment</li>

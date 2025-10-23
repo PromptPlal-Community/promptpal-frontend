@@ -40,13 +40,14 @@ export interface Comment {
   trend: string;
   parentComment?: string;
   replies: Comment[];
+  isEdited: boolean;
   upvotes: string[];
   downvotes: string[];
   voteScore: number;
-  isEdited: boolean;
   depth: number;
   createdAt: string;
   updatedAt: string;
+  __v?: number;
 }
 
 export interface Reward {
@@ -102,7 +103,7 @@ export interface Trend {
     diamond: number;
     other: number;
   };
-  topRewards: {
+  topRewards?: {
     user: User;
     amount: number;
     medal: string;
@@ -149,6 +150,7 @@ export interface RewardTrendData {
 // API Response Types
 export interface TrendsResponse {
   trends: Trend[];
+  comments: Comment[];
   currentPage: number;
   totalPages: number;
   totalTrends: number;
@@ -217,14 +219,6 @@ export interface MedalLeaderboardsResponse {
   type?: string;
 }
 
-
-
-export interface CommunitiesResponse {
-  communities: Community[];
-  currentPage: number;
-  totalPages: number;
-  totalCommunities: number;
-}
 
 export interface CreateCommunityData {
   name: string;

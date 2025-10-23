@@ -9,6 +9,8 @@ import { ImageUpload } from "./ImageUpload";
 import { CharacterCountInput } from "./CharacterCountInput";
 import { AiToolsSelector } from "./AiToolsSelector";
 import { TagsInput } from "./TagsInput";
+import { useMessage } from '../../../hooks/useMessage';
+
 
 export const EditPrompt: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -34,11 +36,10 @@ export const EditPrompt: React.FC = () => {
   const [showPreviewModal, setShowPreviewModal] = useState<boolean>(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  // Use Partial<Prompt> because response data may omit required fields like _id;
-  // use optional chaining when accessing properties on originalPrompt.
   const [originalPrompt, setOriginalPrompt] = useState<Partial<Prompt> | null>(null);
-
   const { updatePrompt, getPromptById } = usePrompts();
+  const { showMessage } = useMessage();
+
 
   const categories: FormPromptData["category"][] = [
     "Art",
@@ -49,7 +50,6 @@ export const EditPrompt: React.FC = () => {
     "Education",
   ];
 
-// Load prompt data when component mounts or id changes
 useEffect(() => {
   let isMounted = true;
 
@@ -63,7 +63,6 @@ useEffect(() => {
     setIsLoading(true);
 
     try {
-      // ✅ getPromptById returns the prompt object directly
       const promptToEdit = await getPromptById(id);
       
       if (!promptToEdit || !promptToEdit._id) {
@@ -95,7 +94,7 @@ useEffect(() => {
       }
     } catch (error) {
       console.error("Error loading prompt:", error);
-      toast.error("Error loading prompt");
+      showMessage('Error loading prompt', 'error');
       navigate("/dashboard/library", { replace: true });
     } finally {
       if (isMounted) setIsLoading(false);
@@ -154,107 +153,108 @@ useEffect(() => {
     setHasUnsavedChanges(true);
   };
 
-  const handleSave = async (publish: boolean = false): Promise<void> => {
-    if (!formData.title.trim()) {
-      toast.error("Please enter a title");
-      return;
+const handleSave = async (): Promise<void> => {
+  if (!formData.title.trim()) {
+    showMessage('Please enter a title', 'error', 3000, 'Error Title');
+    return;
+  }
+  if (!formData.promptText.trim()) {
+    showMessage('Please enter prompt content', 'error', 3000);
+    return;
+  }
+  if (!formData.description.trim()) {
+    showMessage('Please enter prompt description', 'error', 3000);
+    return;
+  }
+  if (!formData.aiTool.length) {
+    showMessage('Please select at least one AI tool', 'error', 3000);
+    return;
+  }
+
+  if (!id) {
+    showMessage('No prompt ID available', 'error', 3000);
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    const formDataToSend = new FormData();
+    
+    // Append update data as individual fields
+    formDataToSend.append("title", formData.title);
+    formDataToSend.append("description", formData.description);
+    formDataToSend.append("promptText", formData.promptText);
+    formDataToSend.append("resultText", formData.resultText || "");
+
+    // Handle arrays properly
+    formDataToSend.append("aiTool", JSON.stringify(formData.aiTool));
+    formDataToSend.append("category", formData.category);
+    
+    formDataToSend.append("isPublic", formData.isPublic.toString());
+    formDataToSend.append("isDraft", (!formData.isPublic).toString());
+
+   
+    if (formData.tags.length > 0) {
+      formDataToSend.append("tags", JSON.stringify(formData.tags));
+    } else {
+      formDataToSend.append("tags", "[]");
     }
-    if (!formData.promptText.trim()) {
-      toast.error("Please enter prompt content");
-      return;
-    }
-    if (!formData.description.trim()) {
-      toast.error("Please enter prompt description");
-      return;
-    }
-    if (!formData.aiTool.length) {
-      toast.error("Please select at least one AI tool");
-      return;
-    }
 
-    if (!id) {
-      toast.error("No prompt ID available");
-      return;
-    }
+    formDataToSend.append("requiresLevel", "Newbie");
+    formDataToSend.append("difficulty", "Beginner");
 
-    setIsSubmitting(true);
-
-    try {
-      const formDataToSend = new FormData();
-      formDataToSend.append("title", formData.title);
-      formDataToSend.append("description", formData.description);
-      formDataToSend.append("promptText", formData.promptText);
-      formDataToSend.append("resultText", formData.resultText || "");
-
-      formDataToSend.append("aiTool", JSON.stringify(formData.aiTool));
-      formDataToSend.append("category", formData.category);
-      formDataToSend.append("isPublic", publish ? "true" : formData.isPublic.toString());
-      formDataToSend.append("isDraft", (!publish).toString());
-
-      if (formData.tags.length > 0) {
-        formDataToSend.append("tags", formData.tags.join(","));
-      } else {
-        formDataToSend.append("tags", "");
-      }
-
-      formDataToSend.append("requiresLevel", "Newbie");
-      formDataToSend.append("difficulty", "Beginner");
-
-      if (formData.images.length > 0) {
-        const captions: string[] = [];
-        formData.images.forEach((image) => {
-          if (image.file) {
-            formDataToSend.append("images", image.file);
-            captions.push(image.name || "");
-          }
-        });
-
-        if (captions.length > 0) {
-          formDataToSend.append("captions", JSON.stringify(captions));
+    // Handle images
+    if (formData.images.length > 0) {
+      const captions: string[] = [];
+      formData.images.forEach((image, index) => {
+        if (image.file) {
+          formDataToSend.append("images", image.file);
+          captions.push(image.caption || image.name || `Image ${index + 1}`);
         }
+      });
+
+      if (captions.length > 0) {
+        formDataToSend.append("captions", JSON.stringify(captions));
       }
-
-      await updatePrompt(id, formDataToSend);
-      setHasUnsavedChanges(false);
-
-      toast.success(
-        publish
-          ? "Prompt published successfully!"
-          : "Prompt updated successfully!"
-      );
-
-      // Navigate back to library after successful save
-      navigate("/dashboard/library");
-    } catch (error) {
-      console.error("Update error:", error);
-      toast.error("Error updating prompt. Please try again.");
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+     await updatePrompt(id, formDataToSend);
+    
+    setHasUnsavedChanges(false);
+    showMessage(formData.isPublic  ? 'Prompt published successfully!' : 'Prompt saved as draft!', 'success');
 
-  const handlePublishClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
-    e.preventDefault();
-    handleSave(true);
-  };
+    // Navigate back to library after successful save
+    navigate("/dashboard/library");
+  } catch (error: unknown) {
+    console.error("Update error:", error);
+    
+    if (error instanceof Error) {
+      toast.error(`Error updating prompt: ${error.message}`);
+    } else {
+    showMessage("Error updating prompt. Please try again.", 'error');
+    }
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+  
 
-  const handleSaveClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
-    e.preventDefault();
-    handleSave(false);
-  };
+const handleSaveClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
+  e.preventDefault();
+  handleSave();
+};
 
   // Warn user about unsaved changes
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasUnsavedChanges) {
-        e.preventDefault();
-        e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
-      }
-    };
+useEffect(() => {
+  const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    if (hasUnsavedChanges) {
+      e.preventDefault();
+    }
+  };
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [hasUnsavedChanges]);
+  window.addEventListener("beforeunload", handleBeforeUnload);
+  return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+}, [hasUnsavedChanges]);
 
   const handleBackClick = () => {
     if (hasUnsavedChanges) {
@@ -295,13 +295,15 @@ useEffect(() => {
             <p className="mt-2 text-sm text-gray-600">
               Update your prompt details
             </p>
-            {originalPrompt && (
-              <div className="mt-2 text-sm text-gray-500">
-                Status: {originalPrompt.isPublic ? "Published" : "Draft"}
-                {originalPrompt.version && ` • Version ${originalPrompt.version}`}
-                {hasUnsavedChanges && " • Unsaved changes"}
-              </div>
-            )}
+{originalPrompt && (
+  <div className="mt-2 text-sm text-gray-500">
+    Status: <span className={`font-medium ${formData.isPublic ? 'text-green-600' : 'text-yellow-600'}`}>
+      {formData.isPublic ? "Published" : "Draft"}
+    </span>
+    {originalPrompt.version && ` • Version ${originalPrompt.version}`}
+    {hasUnsavedChanges && " • Unsaved changes"}
+  </div>
+)}
           </div>
           
           {/* Action Buttons */}
@@ -328,7 +330,7 @@ useEffect(() => {
             {!originalPrompt?.isPublic && (
               <button
                 type="button"
-                onClick={handlePublishClick}
+                onClick={handleSaveClick}
                 disabled={isSubmitting}
                 className="px-4 py-2 bg-purple-600 text-white border border-purple-600 rounded-md hover:bg-purple-700 transition-colors font-medium flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -527,7 +529,7 @@ useEffect(() => {
               {!originalPrompt?.isPublic && (
                 <button
                   type="button"
-                  onClick={handlePublishClick}
+                  onClick={handleSaveClick}
                   disabled={isSubmitting}
                   className="w-full cursor-pointer px-4 py-3 bg-purple-600 text-white border border-purple-600 rounded-md hover:bg-purple-700 transition-colors font-medium flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
