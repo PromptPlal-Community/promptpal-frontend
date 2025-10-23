@@ -108,22 +108,25 @@ export const trendService = {
   },
 
 createTrend: async (trendData: CreateTrendData): Promise<CreateTrendResponse> => {
-  console.log('🔍 Attempting to create trend with data:', trendData);
-  console.log('🔍 Full URL:', `${API_BASE_URL}/trends`);
-  console.log('🔍 Auth token available:', !!authService.getToken());
-  
   try {
     const response = await trendApi.post('/trends', trendData);
-    console.log('✅ Success response:', response);
     return response.data;
-  } catch (error: any) {
-    console.error('❌ Error creating trend:', error);
-    console.error('❌ Error response:', error.response?.data);
-    console.error('❌ Error status:', error.response?.status);
+  } catch (error: unknown) {
+    console.error('Error creating trend:', error);
+        if (typeof error === 'object' && error !== null && 'response' in error) {
+      const axiosError = error as {
+        response?: {
+          data?: unknown;
+          status?: number;
+        };
+      };
+      console.error('Error response:', axiosError.response?.data);
+      console.error('Error status:', axiosError.response?.status);
+    }
+    
     throw error;
   }
 },
-
   updateTrend: async (id: string, updateData: Partial<CreateTrendData>): Promise<Trend> => {
     const response = await trendApi.put(`/trends/${id}`, updateData);
     return response.data;

@@ -232,12 +232,12 @@ export interface CreateCommunityData {
   image?: string; 
   category?: string;
   isPrivate?: boolean;
-    isPublic: boolean;
-    rules: string[];
-    tags: string;
+  isPublic: boolean;
+  rules: CommunityRule[];
+  tags: string[];
 }
 
-// types/trend.ts - Add these types
+
 
 export interface CommunityFilters {
   page?: number;

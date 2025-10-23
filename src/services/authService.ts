@@ -640,20 +640,38 @@ const authService = {
     }
   },
 
-  resetPassword: async (resetToken: string, newPassword: string): Promise<boolean> => {
-  try {
-    const response = await authApi.post('/auth/reset-password', { 
+  resetPassword: async (resetToken: string, newPassword: string): Promise<BasicResponse> => {
+    try {
+      const response = await authApi.post('/auth/reset-password', { 
       resetToken, 
       newPassword,
       confirmNewPassword: newPassword
     });
+      return {
+        success: true,
+        message: response.data.message || 'Password reset successfully.',
+        statusCode: response.status
+      };
+    } catch (error) {
+      console.error("AuthService resetPassword error:", error);
+      const axiosError = error as AxiosError<ErrorResponseData>;
 
-    return response.data.success;
-  } catch (error) {
-    console.error("Reset password error:", error);
-    return false;
-  }
-},
+      if (axiosError.response) {
+        return {
+          success: false,
+          message: axiosError.response.data?.message || 'Failed to reset password.',
+          statusCode: axiosError.response.status
+        };
+      }
+
+      return {
+        success: false,
+        message: axiosError.message || 'An unexpected error occurred during password reset.',
+        statusCode: 0
+      };
+    }
+  },
+
 
   // --- Social Sign In (Simulated) ---
   socialSignIn: async (provider: string): Promise<BasicResponse> => {
