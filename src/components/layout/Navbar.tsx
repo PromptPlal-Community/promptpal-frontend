@@ -30,10 +30,10 @@ function Navbar({ onMenuToggle }: NavbarProps) {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex space-x-6">
-          <Link to="/" className="hover:text-[#270450]">Discover</Link>
-          <Link to="/" className="hover:text-[#270450]">Community</Link>
-          <Link to="/" className="hover:text-[#270450]">Library</Link>
-          <Link to="/" className="hover:text-[#270450]">Pricing</Link>
+          <Link to="/discover" className="hover:text-[#270450]">Discover</Link>
+          <Link to="/community" className="hover:text-[#270450]">Community</Link>
+          <Link to="/library" className="hover:text-[#270450]">Library</Link>
+          <Link to="/pricing" className="hover:text-[#270450]">Pricing</Link>
         </div>
 
         {/* Desktop Buttons */}
@@ -68,17 +68,17 @@ function Navbar({ onMenuToggle }: NavbarProps) {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden bg-white shadow-lg px-4 py-3 space-y-3">
-          <Link to="/" className="block hover:text-[#270450]/90">Discover</Link>
-          <Link to="/" className="block hover:text-[#270450]/90">Community</Link>
-          <Link to="/" className="block hover:text-[#270450]/90">Library</Link>
-          <Link to="/" className="block hover:text-[#270450]/90">Pricing</Link>
+          <Link to="/discover" className="block hover:text-[#270450]/90">Discover</Link>
+          <Link to="/community" className="block hover:text-[#270450]/90">Community</Link>
+          <Link to="/library" className="block hover:text-[#270450]/90">Library</Link>
+          <Link to="/pricing" className="block hover:text-[#270450]/90">Pricing</Link>
           <Link className="w-full px-4 py-2 rounded-lg text-[#270450]/90 hover:bg-purple-100"
           to="/login"
           >
             Login
           </Link>
           <Link className="w-full px-4 py-2 rounded-lg bg-[#270450]/90 text-white hover:bg-[#270450]/90"
-          to="register"
+          to="/register"
           >
             Sign Up
           </Link>

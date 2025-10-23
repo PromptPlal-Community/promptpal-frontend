@@ -40,11 +40,6 @@ promptApi.interceptors.request.use((config) => {
 promptApi.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
-    }
     return Promise.reject(error);
   }
 );
@@ -94,6 +89,8 @@ export const promptService = {
     const response = await promptApi.get('/prompts', { 
       params: filters 
     });
+    console.log(response)
+    console.log(response.data)
     return response.data;
   },
 
