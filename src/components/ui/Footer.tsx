@@ -41,22 +41,22 @@ function Footer() {
             <h3 className="font-semibold text-white mb-3">Quick Links</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#" className="hover:text-white">
+                <a href="/discover" className="hover:text-white">
                   Discover
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white">
+                <a href="/dashboard/promptpal-community" className="hover:text-white">
                   Community
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white">
+                <a href="dashboard/promptpal-library" className="hover:text-white">
                   Resources
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white">
+                <a href="/pricing" className="hover:text-white">
                   Pricing
                 </a>
               </li>

@@ -137,6 +137,8 @@ export interface Prompt {
   createdAt: string;
   updatedAt: string;
   maxLength?: number;
+  isFavorited?: boolean;
+  isUpvoted?: boolean;
   }
 }
 

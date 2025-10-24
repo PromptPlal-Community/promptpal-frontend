@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import type { PromptFilters } from '../../../types/prompt';
 import { usePrompts } from '../../../hooks/usePrompts';
 import LibraryHeader from './LibraryHeader';
@@ -46,9 +46,10 @@ const Library: React.FC<LibraryProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
+  const [allPrompts, setAllPrompts] = useState<any[]>([]);
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
   
-  const { 
-    prompts, 
+  const {  
     loading, 
     error, 
     getPublicPrompts,
@@ -59,7 +60,6 @@ const Library: React.FC<LibraryProps> = ({
     incrementPromptViews 
   } = usePrompts();
 
-  // Local state for tracking user interactions (for optimistic updates)
   const [localInteractions, setLocalInteractions] = useState<{
     [key: string]: {
       liked: boolean;
@@ -68,34 +68,60 @@ const Library: React.FC<LibraryProps> = ({
     }
   }>({});
 
-  // Fetch all public prompts when component mounts or filters change
-useEffect(() => {
-  const loadPrompts = async () => {
+  const fetchPrompts = useCallback(async (page: number, search: string, category: string, isNewFilter: boolean) => {
     try {
       const filters: PromptFilters = {
-        isPublic: true,  // Explicitly filter for public prompts
         limit: 12,
-        page: currentPage,
-        ...(searchQuery && { search: searchQuery }),
-        ...(selectedCategory !== 'All' && { category: selectedCategory })
+        page: page,
+        ...(search && { search: search }),
+        ...(category !== 'All' && { category: category })
       };
       
-      console.log('Fetching public prompts with filters:', filters);
-      await getPublicPrompts(filters);
-    } catch (error) {
-      console.error('Error fetching public prompts:', error);
-    }
-  };
-
-    loadPrompts();
-  }, [searchQuery, selectedCategory, currentPage, getPublicPrompts]); 
-
-  // Handle search with debouncing
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (currentPage !== 1) {
-        setCurrentPage(1);
+      const response = await getPublicPrompts(filters);
+      
+      
+      if (response && response.prompts) {
+        if (isNewFilter || page === 1) {
+          setAllPrompts(response.prompts);
+        } else {
+          setAllPrompts(prev => [...prev, ...response.prompts]);
+        }
+        
+        if (page === 1 && !search && category === 'All' && response.prompts) {
+          const counts: Record<string, number> = {};
+          DEFAULT_CATEGORIES.forEach(cat => {
+            counts[cat] = response.prompts.filter((prompt: any) => prompt.category === cat).length;
+          });
+          setCategoryCounts(counts);
+        }
       }
+    } catch (error) {
+      console.error('❌ Error fetching public prompts:', error);
+    }
+  }, [getPublicPrompts]);
+
+  // State to track if the current fetch is due to a filter change
+  const [isFilterChange, setIsFilterChange] = useState(false);
+
+  useEffect(() => {
+    const isNewFilter = isFilterChange;
+    
+    if (isFilterChange) {
+      setIsFilterChange(false);
+    }
+
+    fetchPrompts(currentPage, searchQuery, selectedCategory, isNewFilter);
+  }, [currentPage, searchQuery, selectedCategory, fetchPrompts, isFilterChange]);
+
+  // Handle filter changes (search/category)
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
+    
+    setIsFilterChange(true);
+
+    const timeoutId = setTimeout(() => {
     }, 500);
 
     return () => clearTimeout(timeoutId);
@@ -103,7 +129,6 @@ useEffect(() => {
 
   const handleLike = async (id: string) => {
     try {
-      await upvotePrompt(id);
       setLocalInteractions(prev => ({
         ...prev,
         [id]: {
@@ -112,13 +137,16 @@ useEffect(() => {
           disliked: false
         }
       }));
+      
+      await upvotePrompt(id);
     } catch (error) {
       console.error('Failed to like prompt:', error);
       setLocalInteractions(prev => ({
         ...prev,
         [id]: {
           ...prev[id],
-          liked: false
+          liked: false,
+          disliked: prev[id]?.disliked || false
         }
       }));
     }
@@ -126,7 +154,6 @@ useEffect(() => {
 
   const handleDislike = async (id: string) => {
     try {
-      await downvotePrompt(id);
       setLocalInteractions(prev => ({
         ...prev,
         [id]: {
@@ -135,23 +162,24 @@ useEffect(() => {
           disliked: true
         }
       }));
+      
+      await downvotePrompt(id);
     } catch (error) {
       console.error('Failed to dislike prompt:', error);
       setLocalInteractions(prev => ({
         ...prev,
         [id]: {
           ...prev[id],
+          liked: prev[id]?.liked || false,
           disliked: false
         }
       }));
     }
   };
 
-  // Handle favorite with optimistic update
   const handleFavorite = async (id: string) => {
     const currentFavorited = localInteractions[id]?.favorited;
     
-    // Optimistic update
     setLocalInteractions(prev => ({
       ...prev,
       [id]: {
@@ -162,12 +190,10 @@ useEffect(() => {
 
     try {
       await favoritePrompt(id);
-      // Call external handler if provided
       if (onFavorite) {
         onFavorite(id);
       }
     } catch (error) {
-      // Revert optimistic update on error
       setLocalInteractions(prev => ({
         ...prev,
         [id]: {
@@ -179,13 +205,11 @@ useEffect(() => {
     }
   };
 
-  // Handle download
   const handleDownload = async (id: string) => {
     try {
-      const prompt = prompts.find(p => p._id === id);
+      const prompt = allPrompts.find(p => p._id === id);
       if (!prompt) return;
 
-      // Create a downloadable text file
       const content = `Prompt: ${prompt.title}\n\n${prompt.promptText}\n\nCategory: ${prompt.category}\nTags: ${prompt.tags?.join(', ')}`;
       const blob = new Blob([content], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
@@ -197,7 +221,6 @@ useEffect(() => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      // Call external handler if provided
       if (onDownload) {
         onDownload(id);
       }
@@ -206,32 +229,26 @@ useEffect(() => {
     }
   };
 
-  // Handle copy to clipboard
   const handleCopy = async (id: string) => {
     try {
-      const prompt = prompts.find(p => p._id === id);
+      const prompt = allPrompts.find(p => p._id === id);
       if (!prompt) return;
 
       await navigator.clipboard.writeText(prompt.promptText);
       
-      // Call external handler if provided
       if (onCopy) {
         onCopy(id);
       }
 
-      // You could show a toast notification here
-      console.log('Prompt copied to clipboard!');
     } catch (error) {
       console.error('Failed to copy prompt:', error);
     }
   };
 
-  // Handle view - this will be called when user clicks on the card to view details
   const handleView = async (id: string) => {
     try {
       await incrementPromptViews(id);
       
-      // Call external handler if provided
       if (onView) {
         onView(id);
       }
@@ -240,26 +257,21 @@ useEffect(() => {
     }
   };
 
-  // Handle share
   const handleShare = async (id: string) => {
     try {
-      const prompt = prompts.find(p => p._id === id);
+      const prompt = allPrompts.find(p => p._id === id);
       if (!prompt) return;
 
       if (navigator.share) {
-        // Use Web Share API if available
         await navigator.share({
           title: prompt.title,
           text: prompt.description,
           url: `${window.location.origin}/dashboard/prompts/${id}`,
         });
       } else {
-        // Fallback: copy to clipboard
         await navigator.clipboard.writeText(`${window.location.origin}/dashboard/prompts/${id}`);
-        console.log('Prompt link copied to clipboard!');
       }
 
-      // Call external handler if provided
       if (onShare) {
         onShare(id);
       }
@@ -268,41 +280,25 @@ useEffect(() => {
     }
   };
 
-  // Calculate categories dynamically from all prompts data
+  // Calculate categories with proper counts
   const categories = useMemo(() => {
-    if (!prompts || prompts.length === 0) {
-      // Return default categories with 0 counts if no prompts
-      return [
-        { name: 'All', count: 0, icon: null },
-        ...DEFAULT_CATEGORIES.map(category => ({
-          name: category,
-          count: 0,
-          icon: null
-        }))
-      ];
-    }
-
-    // Get all unique categories from prompts
-    const uniqueCategoriesFromData = Array.from(new Set(prompts.map(prompt => prompt.category)))
-      .filter(category => category && category.trim() !== '') // Remove empty/null categories
+    const totalCount = Object.values(categoryCounts).reduce((sum, count) => sum + count, 0);
+    
+    const uniqueCategoriesFromData = Array.from(new Set(allPrompts.map(prompt => prompt.category)))
+      .filter(category => category && category.trim() !== '')
       .sort();
 
-    // Combine default categories with actual data categories
     const allCategories = Array.from(new Set([...DEFAULT_CATEGORIES, ...uniqueCategoriesFromData]))
       .sort();
 
-    // Calculate count for each category
-    const categoryCounts = allCategories.reduce((acc, category) => {
-      acc[category] = prompts.filter(prompt => prompt.category === category).length;
-      return acc;
-    }, {} as Record<string, number>);
-
-    // Create categories array with counts
     const categoryList = [
-      { name: 'All', count: prompts.length, icon: null }
+      { 
+        name: 'All', 
+        count: totalCount, 
+        icon: null 
+      }
     ];
 
-    // Add each category with its count
     allCategories.forEach(category => {
       categoryList.push({
         name: category,
@@ -312,10 +308,9 @@ useEffect(() => {
     });
 
     return categoryList;
-  }, [prompts]);
+  }, [allPrompts, categoryCounts]);
 
-  // Use the prompts directly from the API response
-  const displayedPrompts = prompts || [];
+  const displayedPrompts = allPrompts;
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -326,7 +321,9 @@ useEffect(() => {
   };
 
   const handleLoadMore = async () => {
-    if (!pagination || pagination.current >= pagination.total) return;
+    if (!pagination || pagination.current >= pagination.total) {
+      return;
+    }
     
     try {
       const nextPage = currentPage + 1;
@@ -337,10 +334,7 @@ useEffect(() => {
   };
 
   const hasMore = pagination && pagination.current < pagination.total;
-
   const showPaginationLoading = loading && displayedPrompts.length > 0;
-
-
 
   if (error && displayedPrompts.length === 0) {
     return (

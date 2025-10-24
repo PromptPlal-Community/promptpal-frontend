@@ -20,7 +20,7 @@ import {
 import { useTrends } from '../../../../hooks/useTrends';
 import CommentSection from '../../../../components/dashboard/community/trends/CommentSection';
 import RewardSection from '../../../../components/dashboard/community/trends/RewardSection';
-import type { Reward } from '../../../../types/trend';
+import type { Reward, Comment as TrendComment } from '../../../../types/trend';
 
 const TrendDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -34,6 +34,7 @@ const TrendDetailsPage: React.FC = () => {
     upvoteTrend,
     downvoteTrend,
     addComment,
+    deleteComment,
     upvoteComment,
     downvoteComment,
     rewardComment,
@@ -62,16 +63,24 @@ const TrendDetailsPage: React.FC = () => {
     }
   };
 
-  const handleAddComment = async (trendId: string, commentData: { content: string }) => {
-    if (!trendId || !commentData.content.trim()) return;
-    
+  // Fixed handleAddComment function
+  const handleAddComment = async (trendId: string, commentData: { content: string; parentComment?: string }): Promise<TrendComment | void> => {
     setIsSubmittingComment(true);
     try {
+      // If addComment returns void, we need to handle it differently
       await addComment(trendId, commentData);
-      setNewComment('');
+      
+      // Since addComment might not return the comment, we'll rely on the hook to update the comments
+      // Clear the comment input
+      if (!commentData.parentComment) {
+        setNewComment('');
+      }
+      
+      // Return void since we don't have the new comment object
+      return;
     } catch (error) {
       console.error('Failed to add comment:', error);
-      // You might want to show a toast notification here
+      throw error;
     } finally {
       setIsSubmittingComment(false);
     }
@@ -93,13 +102,11 @@ const TrendDetailsPage: React.FC = () => {
     } else {
       // Fallback: copy to clipboard
       navigator.clipboard.writeText(window.location.href);
-      // You might want to show a toast notification here
     }
   };
 
   const handleRewardTrend = async () => {
     if (id) {
-
       await rewardTrend(id, { rewardTypeId: 'some-reward-type-id' });
     }
   };
@@ -211,7 +218,7 @@ const TrendDetailsPage: React.FC = () => {
         {/* Main Trend Content */}
         <Grid cols={1}>
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               {/* Header */}
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center gap-3">
@@ -262,7 +269,7 @@ const TrendDetailsPage: React.FC = () => {
                   </div>
                 </div>
                 
-                <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
                   {currentTrend.title}
                 </h1>
               </div>
@@ -289,11 +296,11 @@ const TrendDetailsPage: React.FC = () => {
               )}
 
               {/* Stats and Actions */}
-              <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+              <div className="flex items-center justify-between pt-6 border-t border-gray-200 flex-wrap gap-4">
                 {/* Left side - Voting and Stats */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 flex-wrap">
                   {/* Voting buttons */}
-                  <div className="flex items-">
+                  <div className="flex items-center">
                     <button 
                       onClick={handleUpvote}
                       className="p-2 hover:bg-purple-50 rounded-lg transition-colors group"
@@ -302,7 +309,7 @@ const TrendDetailsPage: React.FC = () => {
                       <ArrowBigUp className="w-5 h-5 text-gray-500 group-hover:text-purple-600 group-hover:scale-110 transition-transform" />
                     </button>
                     
-                    <span className="font-semibold text-lg text-gray-700 min-w- text-center">
+                    <span className="font-semibold text-lg text-gray-700 min-w-[2rem] text-center">
                       {formatNumber(currentTrend.voteScore || 0)}
                     </span>
                     
@@ -392,7 +399,7 @@ const TrendDetailsPage: React.FC = () => {
 
           {/* Comments and Rewards Section */}
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               {/* Tab Navigation */}
               <div className="flex border-b border-gray-200 mb-6">
                 <button
@@ -424,7 +431,8 @@ const TrendDetailsPage: React.FC = () => {
                 <CommentSection 
                   trendId={currentTrend._id}
                   comments={comments}
-                  onAddComment={handleAddComment}
+                  onAddComment={handleAddComment} // Use the fixed version
+                  onDeleteComment={deleteComment}
                   onUpvoteComment={upvoteComment}
                   onDownvoteComment={downvoteComment}
                   onRewardComment={rewardComment}

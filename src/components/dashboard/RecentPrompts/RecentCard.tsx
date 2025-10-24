@@ -19,9 +19,11 @@ import {
   Edit3,
   Archive,
   Send,
-  Trash2 // Added Trash2 icon
+  Trash2,
+  MoreVertical // Added for mobile menu
 } from 'lucide-react';
 import type { Prompt } from '../../../types/prompt';
+import { useState } from 'react';
 
 // Define the type for category colors
 type CategoryColorKey = 
@@ -86,7 +88,6 @@ const getIconFromPrompt = (prompt: PromptForIcon) => {
   const lowerTitle = prompt.title.toLowerCase();
   const category = prompt.category.toLowerCase();
   const aiTool = prompt.aiTool.map(t => t.toLowerCase());
-
 
   // Check title keywords first
   if (lowerTitle.includes('react') || lowerTitle.includes('component') || lowerTitle.includes('javascript') || lowerTitle.includes('typescript')) {
@@ -169,7 +170,7 @@ interface RecentCardProps {
   onPublish?: (id: string) => void;
   onEdit?: (id: string) => void;
   onUnpublish?: (id: string) => void;
-  onDelete?: (id: string) => void; // Added delete prop
+  onDelete?: (id: string) => void;
   className?: string;
 }
 
@@ -178,10 +179,10 @@ export default function RecentCard({
   onPublish, 
   onEdit,
   onUnpublish,
-  onDelete, // Added onDelete prop
+  onDelete,
   className = "" 
 }: RecentCardProps) {
-  // Use the helper function to safely get color scheme
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const colorScheme = getColorScheme(prompt.category);
   const navigate = useNavigate();
 
@@ -191,12 +192,14 @@ export default function RecentCard({
     e.preventDefault();
     e.stopPropagation();
     onPublish?.(prompt._id);
+    setShowMobileMenu(false);
   };
 
   const handleEdit = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     onEdit?.(prompt._id);
+    setShowMobileMenu(false);
     if (!onEdit) {
       navigate(`/dashboard/prompts/edit/${prompt._id}`);
     }
@@ -206,12 +209,20 @@ export default function RecentCard({
     e.preventDefault();
     e.stopPropagation();
     onUnpublish?.(prompt._id);
+    setShowMobileMenu(false);
   };
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     onDelete?.(prompt._id);
+    setShowMobileMenu(false);
+  };
+
+  const toggleMobileMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowMobileMenu(!showMobileMenu);
   };
 
   // Format category name for display
@@ -230,29 +241,90 @@ export default function RecentCard({
       to={`/dashboard/prompts/${prompt._id}`}
       className={`${colorScheme.bg} rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 flex flex-col h-full group cursor-pointer ${className}`}
     >
-      <div className="p-5 flex-1 flex flex-col">
+      <div className="p-4 sm:p-5 flex-1 flex flex-col">
         {/* Header with category and actions */}
         <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <div className={`${colorScheme.badge} px-3 py-1.5 rounded-lg flex items-center gap-2`}>
+          <div className="flex items-center gap-2 max-w-[70%]">
+            <div className={`${colorScheme.badge} px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg flex items-center gap-1 sm:gap-2`}>
               {icon}
-              <span className={`text-sm font-semibold ${colorScheme.text}`}>
+              <span className={`text-xs sm:text-sm font-semibold ${colorScheme.text} truncate`}>
                 {formatCategory(prompt.category)}
               </span>
             </div>
           </div>
+
+          {/* Mobile Menu Button - Only show on small screens */}
+          <div className="sm:hidden relative">
+            <button
+              onClick={toggleMobileMenu}
+              className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors duration-200 rounded-lg hover:bg-white/50"
+            >
+              <MoreVertical className="w-4 h-4" />
+            </button>
+
+            {/* Mobile Dropdown Menu */}
+            {showMobileMenu && (
+              <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10 py-1">
+                {/* Edit option */}
+                {onEdit && (
+                  <button
+                    onClick={handleEdit}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    {isPublished ? "Edit Published" : "Edit Draft"}
+                  </button>
+                )}
+                
+                {/* Publish/Unpublish options */}
+                {isDraft && onPublish && (
+                  <button
+                    onClick={handlePublish}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                  >
+                    <Send className="w-4 h-4" />
+                    Publish
+                  </button>
+                )}
+                
+                {isPublished && onUnpublish && (
+                  <button
+                    onClick={handleUnpublish}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                  >
+                    <Archive className="w-4 h-4" />
+                    Unpublish
+                  </button>
+                )}
+                
+                {/* Delete option */}
+                {onDelete && (
+                  <button
+                    onClick={handleDelete}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="flex w-full flex-row">
-          <div className="w-70">
-            {/* Title */}
-            <h3 className={`text-xl font-bold ${colorScheme.text} mb-3 group-hover:opacity-80 transition-colors line-clamp-2`}>
+        {/* Title and Status Row */}
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
+          {/* Title - Full width on mobile, 70% on desktop */}
+          <div className="sm:w-[70%]">
+            <h3 className={`text-lg sm:text-xl font-bold ${colorScheme.text} group-hover:opacity-80 transition-colors line-clamp-2 break-words`}>
               {prompt.title}
             </h3>
           </div>        
-          <div className="flex flex-row gap-1 items-end justify-end w-full">
+          
+          {/* Status and Desktop Actions */}
+          <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-1 sm:w-[30%]">
             {/* Status Badge */}
-            <div className={`px-2 py-1 rounded-md text-xs font-medium ${
+            <div className={`px-2 py-1 rounded-md text-xs font-medium flex-shrink-0 ${
               isPublished 
                 ? 'bg-green-100 text-green-800 border border-green-200' 
                 : isDraft 
@@ -262,9 +334,9 @@ export default function RecentCard({
               {isPublished ? 'Published' : isDraft ? 'Draft' : 'Archived'}
             </div>
             
-            {/* Action Buttons */}
-            <div className="flex gap-1">
-              {/* Edit button - available for both drafts and published prompts */}
+            {/* Desktop Action Buttons - Hidden on mobile */}
+            <div className="hidden sm:flex gap-1">
+              {/* Edit button */}
               {onEdit && (
                 <button
                   onClick={handleEdit}
@@ -313,58 +385,58 @@ export default function RecentCard({
 
         {/* Description (if available) */}
         {prompt.description && (
-          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+          <p className="text-gray-600 text-sm mb-3 sm:mb-4 line-clamp-2 break-words">
             {prompt.description}
           </p>
         )}
 
         {/* AI Tools */}
         {prompt.aiTool && prompt.aiTool.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-4">
-            {prompt.aiTool.slice(0, 3).map((tool, index) => (
+          <div className="flex flex-wrap gap-1 mb-3 sm:mb-4">
+            {prompt.aiTool.slice(0, 2).map((tool, index) => ( // Show fewer on mobile
               <span
                 key={index}
-                className="px-2 py-1 bg-white/70 text-gray-700 text-xs rounded-md border border-gray-200"
+                className="px-2 py-1 bg-white/70 text-gray-700 text-xs rounded-md border border-gray-200 truncate max-w-[100px] sm:max-w-none"
               >
                 {tool}
               </span>
             ))}
-            {prompt.aiTool.length > 3 && (
+            {prompt.aiTool.length > 2 && (
               <span className="px-2 py-1 bg-white/70 text-gray-500 text-xs rounded-md border border-gray-200">
-                +{prompt.aiTool.length - 3} more
+                +{prompt.aiTool.length - 2} more
               </span>
             )}
           </div>
         )}
 
         {/* Stats and Author */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200/50 mt-auto">
-          <div className="flex items-center gap-4 text-sm text-gray-600">
+        <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-200/50 mt-auto">
+          <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-600">
             {isPublished ? (
               <>
-                <div className="flex items-center gap-1.5 font-medium">
-                  <Download className="w-4 h-4" />
-                  <span>{prompt.downloads || 0}</span>
+                <div className="flex items-center gap-1 sm:gap-1.5 font-medium">
+                  <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="text-xs sm:text-sm">{prompt.downloads || 0}</span>
                 </div>
-                <div className="flex items-center gap-1.5 font-medium">
-                  <Eye className="w-4 h-4" />
-                  <span>{prompt.views || 0}</span>
+                <div className="flex items-center gap-1 sm:gap-1.5 font-medium">
+                  <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="text-xs sm:text-sm">{prompt.views || 0}</span>
                 </div>
-                <div className="flex items-center gap-1.5 font-medium">
-                  <Star className="w-4 h-4 text-yellow-500" />
-                  <span>{(prompt.rating?.average || 0).toFixed(1)}</span>
+                <div className="flex items-center gap-1 sm:gap-1.5 font-medium">
+                  <Star className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />
+                  <span className="text-xs sm:text-sm">{(prompt.rating?.average || 0).toFixed(1)}</span>
                 </div>
               </>
             ) : (
               <div className="text-xs text-gray-500">
-                Last updated: {new Date(prompt.updatedAt || prompt.createdAt).toLocaleDateString()}
+                Updated: {new Date(prompt.updatedAt || prompt.createdAt).toLocaleDateString()}
               </div>
             )}
           </div>
           
           {/* Version badge for published prompts */}
           {isPublished && prompt.version && (
-            <div className="text-xs text-gray-500 bg-white/50 px-2 py-1 rounded border border-gray-200">
+            <div className="text-xs text-gray-500 bg-white/50 px-2 py-1 rounded border border-gray-200 hidden sm:block">
               v{prompt.version}
             </div>
           )}

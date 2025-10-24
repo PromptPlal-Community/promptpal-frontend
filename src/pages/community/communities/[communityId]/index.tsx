@@ -34,8 +34,7 @@ export const CommunityDetails: React.FC<CommunityDetailsProps> = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'trends' | 'about'>('trends');
 
-  // Wrap the data loading in useCallback to avoid infinite re-renders
-// In your CommunityDetails component, update the loadData function:
+
 const loadData = useCallback(async () => {
   if (id) {
     try {
@@ -46,7 +45,7 @@ const loadData = useCallback(async () => {
       ]);
       
       setCommunity(communityData);
-      setTrends(trendsResponse.trends || []); // Access trends from the response
+      setTrends(trendsResponse.trends || []); 
       
       // Check if user is a member
       if (user && communityData) {
@@ -82,7 +81,7 @@ const loadData = useCallback(async () => {
   };
 
   const handleCreateTrend = () => {
-    navigate('/trends/create', { 
+        navigate('/dashboard/create-trends', { 
       state: { preSelectedCommunity: community?._id } 
     });
   };
@@ -249,7 +248,7 @@ const loadData = useCallback(async () => {
                         <div
                           key={trend._id}
                           className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors cursor-pointer"
-                          onClick={() => navigate(`/trends/${trend._id}`)}
+                          onClick={() => navigate(`/dashboard/trends/${trend._id}`)}
                         >
                           <h3 className="font-semibold text-gray-900 mb-2">
                             {trend.title}
