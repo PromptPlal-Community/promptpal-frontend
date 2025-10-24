@@ -41,7 +41,7 @@ export const Layout: React.FC<LayoutProps> = ({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col lg:ml-64">
         {/* Mobile Navigation - Only show on mobile */}
-        <div className="lg:hidden mb-10">
+        <div className="lg:hidden">
           <MobileNav 
             getCurrentUser={getCurrentUser}
             activeItem={currentPage}

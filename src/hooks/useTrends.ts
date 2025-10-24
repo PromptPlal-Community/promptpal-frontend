@@ -35,7 +35,10 @@ export const useTrends = () => {
   const [currentTrend, setCurrentTrend] = useState<Trend | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [comments, setComments] = useState<TrendComment[]>([]); // Use TrendComment here
+  const [comments, setComments] = useState<TrendComment[]>([]);
+    const [currentComment, setCurrentComment] = useState<TrendComment | null>(null);
+
+  
   const [pagination, setPagination] = useState({
     current: 1,
     total: 1,
@@ -243,7 +246,34 @@ export const useTrends = () => {
 const upvoteComment = useCallback(async (commentId: string): Promise<void> => {
   try {
     // Implement comment upvote logic
-    console.log('Upvoting comment:', commentId);
+      const result: VoteResponse = await trendService.upvoteComment(commentId);
+      setComments(prev => prev.map(comment => 
+        comment._id === commentId 
+          ? { 
+              ...comment, 
+              upvotes: result.userVote === 'upvoted' 
+                ? [...comment.upvotes, authService.getCurrentUserId() || ''] 
+                : comment.upvotes.filter(uid => uid !== authService.getCurrentUserId()),
+              downvotes: result.userVote === 'upvoted' 
+                ? comment.downvotes.filter(uid => uid !== authService.getCurrentUserId())
+                : comment.downvotes,
+              voteScore: result.voteScore 
+            } 
+          : comment
+      ));
+
+      if (currentTrend?._id === commentId) {
+        setCurrentTrend(prev => prev ? {
+          ...prev,
+          upvotes: result.userVote === 'upvoted' 
+            ? [...prev.upvotes, authService.getCurrentUserId() || ''] 
+            : prev.upvotes.filter(uid => uid !== authService.getCurrentUserId()),
+          downvotes: result.userVote === 'upvoted' 
+            ? prev.downvotes.filter(uid => uid !== authService.getCurrentUserId())
+            : prev.downvotes,
+          voteScore: result.voteScore 
+        } : null);
+      }
   } catch (err) {
     throw new Error(err instanceof Error ? err.message : 'Failed to upvote comment');
   }
@@ -252,8 +282,34 @@ const upvoteComment = useCallback(async (commentId: string): Promise<void> => {
 const downvoteComment = useCallback(async (commentId: string): Promise<void> => {
   try {
     // Implement comment downvote logic
-    console.log('Downvoting comment:', commentId);
-  } catch (err) {
+const result: VoteResponse = await trendService.downvoteComment(commentId);
+      setComments(prev => prev.map(comment => 
+        comment._id === commentId 
+          ? { 
+              ...comment, 
+              downvotes: result.userVote === 'downvoted' 
+                ? [...comment.downvotes, authService.getCurrentUserId() || ''] 
+                : comment.downvotes.filter(uid => uid !== authService.getCurrentUserId()),
+              upvotes: result.userVote === 'downvoted' 
+                ? comment.upvotes.filter(uid => uid !== authService.getCurrentUserId())
+                : comment.upvotes,
+              voteScore: result.voteScore 
+            } 
+          : comment
+      ));
+
+      if (currentTrend?._id === commentId) {
+        setCurrentTrend(prev => prev ? {
+          ...prev,
+          downvotes: result.userVote === 'downvoted' 
+            ? [...prev.downvotes, authService.getCurrentUserId() || ''] 
+            : prev.downvotes.filter(uid => uid !== authService.getCurrentUserId()),
+          upvotes: result.userVote === 'downvoted' 
+            ? prev.upvotes.filter(uid => uid !== authService.getCurrentUserId())
+            : prev.upvotes,
+          voteScore: result.voteScore 
+        } : null);
+      }  } catch (err) {
     throw new Error(err instanceof Error ? err.message : 'Failed to downvote comment');
   }
 }, []);
@@ -304,6 +360,25 @@ const rewardComment = useCallback(async (commentId: string): Promise<void> => {
       }
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to delete trend');
+    }
+  }, [currentTrend]);
+
+  const deleteComment = useCallback(async (id: string): Promise<void> => {
+    try {
+      if (!authService.isAuthenticated()) {
+        throw new Error('You must be logged in to delete a comment');
+      }
+
+      await trendService.deleteComment(id);
+
+      // Update local state
+      setComments(prev => prev.filter(comment => comment._id !== id));
+      
+      if (currentComment?._id === id) {
+        setCurrentComment(null);
+      }
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to delete comment');
     }
   }, [currentTrend]);
 
@@ -359,7 +434,8 @@ const rewardComment = useCallback(async (commentId: string): Promise<void> => {
     clearError,
     rewardComment,
     downvoteComment,
-    upvoteComment
+   upvoteComment,
+    deleteComment
   };
 };
 

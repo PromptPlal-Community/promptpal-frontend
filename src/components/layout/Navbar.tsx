@@ -31,8 +31,8 @@ function Navbar({ onMenuToggle }: NavbarProps) {
         {/* Desktop Menu */}
         <div className="hidden md:flex space-x-6">
           <Link to="/discover" className="hover:text-[#270450]">Discover</Link>
-          <Link to="/community" className="hover:text-[#270450]">Community</Link>
-          <Link to="/library" className="hover:text-[#270450]">Library</Link>
+          <Link to="/dashboard/community" className="hover:text-[#270450]">Community</Link>
+          <Link to="/dashboard/promptpal-library" className="hover:text-[#270450]">Library</Link>
           <Link to="/pricing" className="hover:text-[#270450]">Pricing</Link>
         </div>
 

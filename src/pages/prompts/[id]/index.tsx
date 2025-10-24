@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   Heart, 
@@ -17,7 +17,6 @@ import {
   Check,
   Share2,
   Bookmark,
-  ExternalLink
 } from 'lucide-react';
 import { PageContainer } from '../../../components/layout/PageContainer';
 import { Grid, Card, CardContent } from '../../../components/layout/Grid';
@@ -74,7 +73,6 @@ const getColorScheme = (category: string) => {
 
 const getIconFromPrompt = (prompt: Prompt) => {
   const lowerTitle = prompt.title.toLowerCase();
-  // ... (same icon mapping logic as in PromptCard)
   if (lowerTitle.includes('react') || lowerTitle.includes('component') || lowerTitle.includes('javascript') || lowerTitle.includes('typescript')) {
     return <Code className="w-5 h-5" />;
   }
@@ -84,69 +82,189 @@ const getIconFromPrompt = (prompt: Prompt) => {
   if (lowerTitle.includes('write') || lowerTitle.includes('blog') || lowerTitle.includes('article') || lowerTitle.includes('content')) {
     return <FileText className="w-5 h-5" />;
   }
-  // ... include all other icon mappings from your PromptCard
-
   return <Code className="w-5 h-5" />;
 };
+
+// Define a local interface that extends Prompt with UI-specific properties
+interface UIPrompt extends Prompt {
+  isFavorited?: boolean;
+  isUpvoted?: boolean;
+}
 
 const PromptDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { prompts, loading, upvotePrompt, favoritePrompt } = usePrompts();
-  const [prompt, setPrompt] = useState<Prompt | null>(null);
+  const { 
+    prompts, 
+    getPromptById, 
+    upvotePrompt, 
+    favoritePrompt, 
+    incrementPromptViews 
+  } = usePrompts();
+  
+  const [prompt, setPrompt] = useState<UIPrompt | null>(null);
   const [copied, setCopied] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const hasIncrementedViews = useRef(false);
+  const getPromptByIdRef = useRef(getPromptById);
+  const incrementPromptViewsRef = useRef(incrementPromptViews);
 
   useEffect(() => {
-    if (id && prompts.length > 0) {
-      const foundPrompt = prompts.find(p => p._id === id);
-      if (foundPrompt) {
-        setPrompt(foundPrompt);
+    getPromptByIdRef.current = getPromptById;
+  }, [getPromptById]);
+
+  useEffect(() => {
+    incrementPromptViewsRef.current = incrementPromptViews;
+  }, [incrementPromptViews]);
+
+  // Reset refs when id changes
+  useEffect(() => {
+    hasIncrementedViews.current = false;
+  }, [id]);
+
+  // Fetch prompt data
+  useEffect(() => {
+    if (!id) return;
+
+    let active = true;
+
+    const fetchPrompt = async () => {
+      console.log('🔍 Fetching prompt with ID:', id);
+      
+      setIsLoading(true);
+      try {
+        let promptData: UIPrompt | null = null;
+        
+        // First try to find in existing prompts (if coming from library)
+        if (prompts && prompts.length > 0) {
+          console.log('📚 Checking existing prompts:', prompts.length);
+          const foundPrompt = prompts.find(p => p._id === id);
+          if (foundPrompt) {
+            console.log('✅ Found prompt in existing data');
+            promptData = {
+              ...foundPrompt,
+              isFavorited: false,
+              isUpvoted: foundPrompt.upvotedBy && foundPrompt.upvotedBy.length > 0
+            };
+          }
+        }
+        
+        // If not found, fetch from API
+        if (!promptData && getPromptByIdRef.current) {
+          console.log('🌐 Fetching prompt from API');
+          const apiPrompt = await getPromptByIdRef.current(id);
+          console.log("API response:", apiPrompt);
+          if (apiPrompt) {
+            promptData = {
+              ...apiPrompt,
+              isFavorited: false,
+              isUpvoted: apiPrompt.upvotedBy && apiPrompt.upvotedBy.length > 0
+            };
+          }
+        }
+        
+        if (active) {
+          if (promptData) {
+            console.log('🎉 Setting prompt data:', promptData);
+            setPrompt(promptData);
+            
+            // Increment views only once when prompt is viewed (fire and forget)
+            if (!hasIncrementedViews.current) {
+              hasIncrementedViews.current = true;
+              if (incrementPromptViewsRef.current) {
+                incrementPromptViewsRef.current(id).catch(err => 
+                  console.error('Failed to increment views:', err)
+                );
+              }
+            }
+          } else {
+            console.log('❌ No prompt data found');
+            setPrompt(null);
+          }
+        }
+      } catch (error) {
+        console.error('Error in fetchPrompt:', error);
+        if (active) {
+          toast.error('Failed to load prompt details');
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
       }
-    }
+    };
+
+    fetchPrompt();
+
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      active = false;
+    };
   }, [id, prompts]);
 
   const handleCopyPrompt = async () => {
     if (prompt) {
-      await navigator.clipboard.writeText(prompt.promptText);
-      setCopied(true);
-      toast.success('Prompt copied to clipboard!');
-      setTimeout(() => setCopied(false), 2000);
+      try {
+        await navigator.clipboard.writeText(prompt.promptText);
+        setCopied(true);
+        toast.success('Prompt copied to clipboard!');
+        setTimeout(() => setCopied(false), 2000);
+      } catch (error) {
+        toast.error('Failed to copy prompt');
+      }
     }
   };
 
   const handleUpvote = async () => {
     if (prompt) {
-
+      try {
         await upvotePrompt(prompt._id);
+        // Update local state optimistically
+        setPrompt(prev => prev ? {
+          ...prev,
+          upvotes: (prev.upvotes || 0) + 1,
+          isUpvoted: true
+        } : null);
         toast.success('Prompt upvoted!');
-
+      } catch (error) {
+        toast.error('Failed to upvote prompt');
+      }
     }
   };
 
-const handleFavorite = async () => {
-  if (prompt) {
- 
-      await favoritePrompt(prompt._id);
-      toast.success('Prompt added to favorites!');
-    
-  }
-};
+  const handleFavorite = async () => {
+    if (prompt) {
+      try {
+        await favoritePrompt(prompt._id);
+        // Update local state optimistically
+        setPrompt(prev => prev ? {
+          ...prev,
+          isFavorited: !prev.isFavorited
+        } : null);
+        toast.success(prompt.isFavorited ? 'Prompt removed from favorites!' : 'Prompt added to favorites!');
+      } catch (error) {
+        toast.error('Failed to update favorites');
+      }
+    }
+  };
 
   const handleShare = async () => {
     if (prompt) {
       const shareUrl = `${window.location.origin}/prompts/${prompt._id}`;
-      if (navigator.share) {
-
+      try {
+        if (navigator.share) {
           await navigator.share({
             title: prompt.title,
             text: prompt.description,
             url: shareUrl,
           });
-
-      } else {
-        await navigator.clipboard.writeText(shareUrl);
-        toast.success('Link copied to clipboard!');
+        } else {
+          await navigator.clipboard.writeText(shareUrl);
+          toast.success('Link copied to clipboard!');
+        }
+      } catch (error) {
+        console.error('Error sharing:', error);
       }
     }
   };
@@ -187,7 +305,10 @@ const handleFavorite = async () => {
     }
   };
 
-  if (loading) {
+  // Debug log to see what's happening
+  console.log('🔄 Component state:', { isLoading, prompt: prompt ? 'loaded' : 'null', id });
+
+  if (isLoading) {
     return (
       <PageContainer>
         <div className="animate-pulse">
@@ -240,12 +361,12 @@ const handleFavorite = async () => {
           Back
         </button>
         
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">{prompt.title}</h1>
-            <p className="text-gray-600 text-lg">{prompt.description}</p>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="flex-1">
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">{prompt.title}</h1>
+            <p className="text-gray-600 text-base lg:text-lg">{prompt.description}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={handleCopyPrompt}
               className="flex items-center gap-2 bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
@@ -264,14 +385,14 @@ const handleFavorite = async () => {
         </div>
       </div>
 
-      <Grid >
+      <Grid>
         {/* Main Content - 2/3 width */}
         <div className="lg:col-span-2 space-y-6">
           {/* Prompt Content */}
           <Card>
             <CardContent className="p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Prompt Content</h2>
-              <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm whitespace-pre-wrap border">
+              <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm whitespace-pre-wrap border max-h-96 overflow-y-auto">
                 {prompt.promptText}
               </div>
             </CardContent>
@@ -282,7 +403,7 @@ const handleFavorite = async () => {
             <Card>
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Expected Result</h2>
-                <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                <div className="bg-green-50 rounded-lg p-4 border border-green-200 max-h-96 overflow-y-auto">
                   <p className="text-gray-700 whitespace-pre-wrap">{prompt.resultText}</p>
                 </div>
               </CardContent>
@@ -311,7 +432,7 @@ const handleFavorite = async () => {
                     <div className="flex gap-2 overflow-x-auto">
                       {prompt.images.map((image, index) => (
                         <button
-                          key={image.public_id}
+                          key={image.public_id || index}
                           onClick={() => setActiveImageIndex(index)}
                           className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${
                             index === activeImageIndex ? 'border-[#270450]' : 'border-transparent'
@@ -338,7 +459,7 @@ const handleFavorite = async () => {
           <Card>
             <CardContent className="p-6">
               <div className="space-y-4">
-                {/* Category and AI Tool */}
+                {/* Category */}
                 <div className="flex items-center justify-between">
                   <div className={`${colorScheme.badge} px-3 py-2 rounded-lg flex items-center gap-2`}>
                     {icon}
@@ -346,34 +467,37 @@ const handleFavorite = async () => {
                       {prompt.category}
                     </span>
                   </div>
-                <div className="bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-semibold">
+                </div>
 
-          {prompt.aiTool.length > 0 && (
-            <>
-              <h3 className="font-semibold text-gray-900 mb-3">AI Tools</h3>
-              <div className="flex flex-wrap gap-2">
-                {prompt.aiTool.map((aiTool, index) => (
-                  <span
-                    key={index}
-                    className={`${colorScheme.badge} ${colorScheme.text} px-3 py-1.5 rounded-lg text-sm font-medium capitalize`}
-                  >
-                    {aiTool}
-                  </span>
-                ))}
-              </div>
-            </>
-          )}
-                </div>
-                </div>
+                {/* AI Tools */}
+                {prompt.aiTool && prompt.aiTool.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-2">AI Tools</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {prompt.aiTool.map((aiTool, index) => (
+                        <span
+                          key={index}
+                          className={`${colorScheme.badge} ${colorScheme.text} px-3 py-1.5 rounded-lg text-sm font-medium capitalize`}
+                        >
+                          {aiTool}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Difficulty and Level */}
                 <div className="flex gap-2">
-                  <span className={`px-3 py-1 rounded-lg text-sm font-medium border ${getDifficultyColor(prompt.difficulty)}`}>
-                    {prompt.difficulty}
-                  </span>
-                  <span className={`px-3 py-1 rounded-lg text-sm font-medium border ${getLevelColor(prompt.requiresLevel)}`}>
-                    {prompt.requiresLevel}
-                  </span>
+                  {prompt.difficulty && (
+                    <span className={`px-3 py-1 rounded-lg text-sm font-medium border ${getDifficultyColor(prompt.difficulty)}`}>
+                      {prompt.difficulty}
+                    </span>
+                  )}
+                  {prompt.requiresLevel && (
+                    <span className={`px-3 py-1 rounded-lg text-sm font-medium border ${getLevelColor(prompt.requiresLevel)}`}>
+                      {prompt.requiresLevel}
+                    </span>
+                  )}
                 </div>
 
                 {/* Stats */}
@@ -381,28 +505,28 @@ const handleFavorite = async () => {
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-1 text-gray-600 mb-1">
                       <Heart className="w-4 h-4" />
-                      <span className="font-semibold">{prompt.upvotes}</span>
+                      <span className="font-semibold">{prompt.upvotes || 0}</span>
                     </div>
                     <div className="text-xs text-gray-500">Upvotes</div>
                   </div>
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-1 text-gray-600 mb-1">
                       <Download className="w-4 h-4" />
-                      <span className="font-semibold">{prompt.downloads}</span>
+                      <span className="font-semibold">{prompt.downloads || 0}</span>
                     </div>
                     <div className="text-xs text-gray-500">Downloads</div>
                   </div>
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-1 text-gray-600 mb-1">
                       <Eye className="w-4 h-4" />
-                      <span className="font-semibold">{prompt.views}</span>
+                      <span className="font-semibold">{prompt.views || 0}</span>
                     </div>
                     <div className="text-xs text-gray-500">Views</div>
                   </div>
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-1 text-gray-600 mb-1">
                       <Star className="w-4 h-4 text-yellow-500" />
-                      <span className="font-semibold">{prompt.rating.average.toFixed(1)}</span>
+                      <span className="font-semibold">{prompt.rating?.average?.toFixed(1) || '0.0'}</span>
                     </div>
                     <div className="text-xs text-gray-500">Rating</div>
                   </div>
@@ -412,17 +536,25 @@ const handleFavorite = async () => {
                 <div className="flex gap-2">
                   <button
                     onClick={handleUpvote}
-                    className="flex-1 flex items-center justify-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                      prompt.isUpvoted 
+                        ? 'bg-[#270450] text-white hover:bg-[#270450]/90' 
+                        : 'bg-red-500 text-white hover:bg-red-600'
+                    }`}
                   >
                     <Heart className="w-4 h-4" />
-                    Upvote
+                    {prompt.isUpvoted ? 'Upvoted' : 'Upvote'}
                   </button>
                   <button
                     onClick={handleFavorite}
-                    className="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                      prompt.isFavorited 
+                        ? 'bg-[#270450] text-white hover:bg-[#270450]/90' 
+                        : 'bg-white border border-gray-300 hover:bg-gray-50'
+                    }`}
                   >
                     <Bookmark className="w-4 h-4" />
-                    Save
+                    {prompt.isFavorited ? 'Saved' : 'Save'}
                   </button>
                 </div>
               </div>
@@ -430,31 +562,32 @@ const handleFavorite = async () => {
           </Card>
 
           {/* Author Info */}
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Author</h3>
-              <div className="flex items-center gap-3">
-                {prompt.author.avatar ? (
-                  <img
-                    src={prompt.author.avatar}
-                    alt={prompt.author.username}
-                    className="w-12 h-12 rounded-full"
-                  />
-                ) : (
-                  <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                    <User className="w-6 h-6 text-gray-400" />
-                  </div>
-                )}
-                <div>
-                  <div className="font-semibold text-gray-900">{prompt.author.username}</div>
-                  <div className="text-sm text-gray-600 capitalize">{prompt.author.level}</div>
-                  {prompt.author && (
-                    <div className="text-sm text-gray-500">{prompt._id}</div>
+          {prompt.author && (
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-gray-900 mb-4">Author</h3>
+                <div className="flex items-center gap-3">
+                  {prompt.author.avatar ? (
+                    <img
+                      src={prompt.author.avatar}
+                      alt={prompt.author.username}
+                      className="w-12 h-12 rounded-full"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                      <User className="w-6 h-6 text-gray-400" />
+                    </div>
                   )}
+                  <div>
+                    <div className="font-semibold text-gray-900">{prompt.author.username}</div>
+                    {prompt.author.level && (
+                      <div className="text-sm text-gray-600 capitalize">{prompt.author.level}</div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Metadata */}
           <Card>
@@ -471,14 +604,10 @@ const handleFavorite = async () => {
                     <span>Updated {formatDate(prompt.updatedAt)}</span>
                   </div>
                 )}
-                <div className="flex items-center gap-2 text-sm">
-                  <Tag className="w-4 h-4 text-gray-400" />
-                  <span>Version {prompt.version}</span>
-                </div>
-                {prompt.community && (
+                {prompt.version && (
                   <div className="flex items-center gap-2 text-sm">
-                    <ExternalLink className="w-4 h-4 text-gray-400" />
-                    <span>Community: </span>
+                    <Tag className="w-4 h-4 text-gray-400" />
+                    <span>Version {prompt.version}</span>
                   </div>
                 )}
               </div>
@@ -486,7 +615,7 @@ const handleFavorite = async () => {
           </Card>
 
           {/* Tags */}
-          {prompt.tags.length > 0 && (
+          {prompt.tags && prompt.tags.length > 0 && (
             <Card>
               <CardContent className="p-6">
                 <h3 className="font-semibold text-gray-900 mb-3">Tags</h3>
@@ -505,33 +634,41 @@ const handleFavorite = async () => {
           )}
 
           {/* Technical Info */}
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Technical Info</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Estimated Tokens:</span>
-                  <span className="font-medium">{prompt.estimatedTokens}</span>
+          {prompt.metadata && (
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-gray-900 mb-4">Technical Info</h3>
+                <div className="space-y-2 text-sm">
+                  {prompt.estimatedTokens && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Estimated Tokens:</span>
+                      <span className="font-medium">{prompt.estimatedTokens}</span>
+                    </div>
+                  )}
+                  {prompt.metadata.wordCount && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Word Count:</span>
+                      <span className="font-medium">{prompt.metadata.wordCount}</span>
+                    </div>
+                  )}
+                  {prompt.metadata.characterCount && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Character Count:</span>
+                      <span className="font-medium">{prompt.metadata.characterCount}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Contains Code:</span>
+                    <span className="font-medium">{prompt.metadata.hasCode ? 'Yes' : 'No'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Has Images:</span>
+                    <span className="font-medium">{prompt.images && prompt.images.length > 0 ? 'Yes' : 'No'}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Word Count:</span>
-                  <span className="font-medium">{prompt.metadata.wordCount}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Character Count:</span>
-                  <span className="font-medium">{prompt.metadata.characterCount}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Contains Code:</span>
-                  <span className="font-medium">{prompt.metadata.hasCode ? 'Yes' : 'No'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Has Images:</span>
-                  <span className="font-medium">{prompt.metadata.hasImages ? 'Yes' : 'No'}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </Grid>
     </PageContainer>

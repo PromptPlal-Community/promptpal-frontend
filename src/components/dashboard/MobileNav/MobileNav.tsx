@@ -145,12 +145,12 @@ const MobileNav: React.FC<MobileNavProps> = ({
   };
 
   const handleCommunityClick = (communityId: string) => {
-    navigate(`/communities/${communityId}`);
+    navigate(`/dashboard/communities/${communityId}`);
     setIsSidebarOpen(false);
   };
 
   const handleViewAllCommunities = () => {
-    navigate('/communities');
+    navigate('/dashboard/communities');
     setIsSidebarOpen(false);
   };
 
@@ -201,7 +201,6 @@ const MobileNav: React.FC<MobileNavProps> = ({
                 alt="Prompt-Pal Logo"
                 className="h-8 w-auto"
               />
-              <span className="text-lg font-semibold text-gray-900 hidden sm:block">PromptPal</span>
             </div>
           </div>
 
@@ -262,7 +261,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
 
         {/* Navigation Items */}
         <div className="flex-1 overflow-y-auto">
-          <nav className="p-4 space-y-">
+          <nav className="p-4 space-y-3">
             {navItems.map((item) => (
               <button
                 key={item.key}

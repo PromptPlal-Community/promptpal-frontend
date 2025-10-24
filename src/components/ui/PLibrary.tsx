@@ -1,9 +1,18 @@
 import { Link } from "react-router-dom";
 import { FaSearch } from "react-icons/fa";
 import { PromptCard } from "../dashboard/library";
+import type { Prompt } from "../../types/prompt"; 
 import { mockPrompts } from "../../types/mockPrompts";
 import { usePrompts } from "../../hooks/usePrompts";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+
+
+
+interface LocalInteraction {
+  liked: boolean;
+  disliked: boolean;
+  favorited: boolean;
+}
 
 interface LibraryProps {
   onLike?: (id: string) => void;
@@ -24,42 +33,48 @@ const PLibrary: React.FC<LibraryProps> = ({
 }) => {
   const { 
     getPublicPrompts,
-    prompts, 
     loading,
   } = usePrompts();
 
-  const [localInteractions, setLocalInteractions] = useState<{
-    [key: string]: {
-      liked: boolean;
-      favorited: boolean;
-    }
-  }>({});
-
-  const [displayPrompts, setDisplayPrompts] = useState(mockPrompts.slice(0, 3));
+  const [localInteractions, setLocalInteractions] = useState<{[key: string]: LocalInteraction}>({});
+  const [allFetchedPrompts, setAllFetchedPrompts] = useState<Prompt[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [apiFailed, setApiFailed] = useState(false);
-
-  // Fetch public prompts on component mount
-  useEffect(() => {
-    const fetchPublicPrompts = async () => {
-      try {
-        setApiFailed(false);
-        await getPublicPrompts();
-      } catch (error) {
-        console.error('API call failed, using mock data:', error);
+  
+  const fetchAllPrompts = useCallback(async () => {
+    try {
+      setApiFailed(false);
+      
+      const response = await getPublicPrompts({ limit: 1000, page: 1 }); 
+      
+      if (response && response.prompts) {
+        setAllFetchedPrompts(response.prompts as Prompt[]);
+      } else {
         setApiFailed(true);
+        setAllFetchedPrompts(mockPrompts as Prompt[]);
       }
-    };
-
-    fetchPublicPrompts();
+    } catch (error) {
+      console.error('API call failed, falling back to mock data:', error);
+      setApiFailed(true);
+      setAllFetchedPrompts(mockPrompts as Prompt[]);
+    }
   }, [getPublicPrompts]);
 
   useEffect(() => {
-    if (!apiFailed && prompts && prompts.length > 0) {
-      setDisplayPrompts(prompts.slice(0, 3));
-    } else {
-      setDisplayPrompts(mockPrompts.slice(0, 3));
-    }
-  }, [prompts, apiFailed]);
+    fetchAllPrompts();
+  }, [fetchAllPrompts]);
+
+  const filteredAndLimitedPrompts = useMemo(() => {
+    const filtered = allFetchedPrompts.filter(prompt => 
+      prompt.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      prompt.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      prompt.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      prompt.tags?.some((tag: string) => 
+        tag.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+    return filtered.slice(0, 3);
+  }, [allFetchedPrompts, searchQuery]);
 
   const handleLike = async (id: string) => {
     setLocalInteractions(prev => ({
@@ -67,7 +82,8 @@ const PLibrary: React.FC<LibraryProps> = ({
       [id]: {
         ...prev[id],
         liked: true,
-        disliked: false
+        disliked: false,
+        favorited: prev[id]?.favorited || false,
       }
     }));
     console.log('Mock like for prompt:', id);
@@ -79,7 +95,8 @@ const PLibrary: React.FC<LibraryProps> = ({
       [id]: {
         ...prev[id],
         liked: false,
-        disliked: true
+        disliked: true,
+        favorited: prev[id]?.favorited || false,
       }
     }));
     console.log('Mock dislike for prompt:', id);
@@ -87,25 +104,26 @@ const PLibrary: React.FC<LibraryProps> = ({
 
   const handleFavorite = async (id: string) => {
     const currentFavorited = localInteractions[id]?.favorited;
-    
     setLocalInteractions(prev => ({
       ...prev,
       [id]: {
         ...prev[id],
+        liked: prev[id]?.liked || false,
+        disliked: prev[id]?.disliked || false,
         favorited: !currentFavorited
       }
     }));
-
     console.log('Mock favorite for prompt:', id);
     if (onFavorite) {
       onFavorite(id);
     }
   };
+  
+  const findPrompt = (id: string) => allFetchedPrompts.find(p => p._id === id);
 
-  // Keep download, copy, view, share handlers as they work locally
   const handleDownload = async (id: string) => {
     try {
-      const prompt = displayPrompts.find(p => p._id === id);
+      const prompt = findPrompt(id);
       if (!prompt) return;
 
       const content = `Prompt: ${prompt.title}\n\n${prompt.promptText}\n\nCategory: ${prompt.category}\nTags: ${prompt.tags?.join(', ')}`;
@@ -119,9 +137,7 @@ const PLibrary: React.FC<LibraryProps> = ({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      if (onDownload) {
-        onDownload(id);
-      }
+      if (onDownload) onDownload(id);
     } catch (error) {
       console.error('Failed to download prompt:', error);
     }
@@ -129,15 +145,11 @@ const PLibrary: React.FC<LibraryProps> = ({
 
   const handleCopy = async (id: string) => {
     try {
-      const prompt = displayPrompts.find(p => p._id === id);
+      const prompt = findPrompt(id);
       if (!prompt) return;
 
       await navigator.clipboard.writeText(prompt.promptText);
-      
-      if (onCopy) {
-        onCopy(id);
-      }
-
+      if (onCopy) onCopy(id);
       console.log('Prompt copied to clipboard!');
     } catch (error) {
       console.error('Failed to copy prompt:', error);
@@ -145,32 +157,27 @@ const PLibrary: React.FC<LibraryProps> = ({
   };
 
   const handleView = async (id: string) => {
-    // Mock implementation
     console.log('Mock view increment for prompt:', id);
-    
-    if (onView) {
-      onView(id);
-    }
+    if (onView) onView(id);
   };
 
   const handleShare = async (id: string) => {
     try {
-      const prompt = displayPrompts.find(p => p._id === id);
+      const prompt = findPrompt(id);
       if (!prompt) return;
 
+      const shareUrl = `${window.location.origin}/prompts/${id}`;
       if (navigator.share) {
         await navigator.share({
           title: prompt.title,
           text: prompt.description,
-          url: `${window.location.origin}/prompts/${id}`,
+          url: shareUrl,
         });
       } else {
-        await navigator.clipboard.writeText(`${window.location.origin}/prompts/${id}`);
+        await navigator.clipboard.writeText(shareUrl);
       }
 
-      if (onShare) {
-        onShare(id);
-      }
+      if (onShare) onShare(id);
     } catch (error) {
       console.error('Failed to share prompt:', error);
     }
@@ -199,51 +206,65 @@ const PLibrary: React.FC<LibraryProps> = ({
               <input
                 type="text"
                 placeholder="Find Prompts"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="outline-none w-full bg-transparent text-sm md:text-base"
               />
             </div>
           </div>
         </div>
 
-        {/* Loading State */}
-        {loading && !apiFailed && (
+        {/* Loading State & Messages */}
+        {loading && (
           <div className="text-center py-8">
             <p className="text-gray-600 text-sm md:text-base">Loading prompts...</p>
           </div>
         )}
-
-        {/* API Failed Message */}
-        {apiFailed && (
+        
+        {!loading && (
           <div className="text-center py-3 md:py-4 mb-4">
-            <p className="text-orange-600 text-sm md:text-base px-4">
-              Showing sample prompts - sign up to access the full library!
-            </p>
+            {apiFailed ? (
+              <p className="text-orange-600 text-sm md:text-base px-4">
+                Showing sample prompts - sign up to access the full library!
+              </p>
+            ) : (
+              <p className="text-sm text-gray-600">
+              </p>
+            )}
           </div>
         )}
 
-        {/* Prompts Grid - Mobile Responsive */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 md:mb-10">
-          {displayPrompts.map((prompt) => (
-            <div key={prompt._id} className="w-full">
-              <PromptCard
-                prompt={prompt}
-                onLike={() => handleLike(prompt._id)}
-                onDislike={() => handleDislike(prompt._id)}
-                onFavorite={() => handleFavorite(prompt._id)}
-                onDownload={() => handleDownload(prompt._id)}
-                onCopy={() => handleCopy(prompt._id)}
-                onView={() => handleView(prompt._id)}
-                onShare={() => handleShare(prompt._id)}
-                interactions={localInteractions[prompt._id]}
-              />
+        {/* Prompts Grid */}
+        {filteredAndLimitedPrompts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 md:mb-10">
+            {filteredAndLimitedPrompts.map((prompt) => (
+              <div key={prompt._id} className="w-full">
+                <PromptCard
+                  prompt={prompt}
+                  onLike={() => handleLike(prompt._id)}
+                  onDislike={() => handleDislike(prompt._id)}
+                  onFavorite={() => handleFavorite(prompt._id)}
+                  onDownload={() => handleDownload(prompt._id)}
+                  onCopy={() => handleCopy(prompt._id)}
+                  onView={() => handleView(prompt._id)}
+                  onShare={() => handleShare(prompt._id)}
+                  interactions={localInteractions[prompt._id]}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          !loading && (
+            <div className="text-center py-10 text-gray-500">
+              No prompts found matching your search.
             </div>
-          ))}
-        </div>
+          )
+        )}
 
         {/* CTA Button */}
         <div className="flex items-center justify-center px-4">
           <Link
-            to="/register"
+            to="/dashboard/promptpal-library"
             className="inline-block px-6 py-3 md:px-8 md:py-4 bg-[#270450] text-white rounded-lg font-semibold text-sm md:text-base shadow hover:bg-[#270450]/80 transition-colors duration-200 text-center w-full sm:w-auto"
           >
             Browse all prompts

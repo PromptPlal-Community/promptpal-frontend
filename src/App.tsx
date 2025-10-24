@@ -16,6 +16,8 @@ import DashboardRouter from "./pages/DashboardRouter";
 import PromptDetailsPage from "./pages/prompts/[id]";
 import { MessageProvider } from "./hooks/MessageProvider";
 import GoogleAuthCallback from "./components/auths/GoogleAuthCallback";
+import PricingPage from "./pages/PricingPage";
+import DiscoverPage from "./pages/DiscoverPage";
 
 function App() {
   return (
@@ -34,6 +36,8 @@ function App() {
           <Route path="/passwordverify" element={<PasswordVerification />} />
           <Route path="/reset-password" element={<PasswordUpdate />} />
           <Route path="/passwordsuccess" element={<PasswordSuccess />} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/discover" element={<DiscoverPage />} />
 
           {/* Other Pages */}
           <Route path="/ctrending" element={<CTrending />} />

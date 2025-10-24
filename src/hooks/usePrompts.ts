@@ -71,27 +71,24 @@ export const usePrompts = () => {
     }
   }, []);
 
-  const getPublicPrompts = useCallback(async (filters: PromptFilters = {}) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await promptService.getPublicPrompts(filters);
-      console.log('Public prompts response:', response);
-      
-      setPrompts(response.prompts || []);
-      setPagination(response.pagination || {
-        current: response.current || 1,
-        total: response.totalPages || 1,
-        count: (response.prompts || []).length,
-        totalRecords: response.totalRecords || 0,
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch public prompts');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+// hooks/usePrompts.ts
+const getPublicPrompts = useCallback(async (filters = {}) => {
+  setLoading(true);
+  setError(null);
+  try {
+    console.log('🔓 Fetching PUBLIC prompts only');
+    const response = await promptService.getPublicPrompts(filters);
+    
+    // Return the response but don't set prompts in the hook state
+    return response;
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Failed to fetch public prompts';
+    setError(errorMessage);
+    throw err;
+  } finally {
+    setLoading(false);
+  }
+}, [setLoading, setError]);
 
   // Only call fetchUserPrompts on mount
   useEffect(() => {

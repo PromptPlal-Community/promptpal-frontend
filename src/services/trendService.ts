@@ -128,7 +128,12 @@ createTrend: async (trendData: CreateTrendData): Promise<CreateTrendResponse> =>
   }
 },
   updateTrend: async (id: string, updateData: Partial<CreateTrendData>): Promise<Trend> => {
-    const response = await trendApi.put(`/trends/${id}`, updateData);
+    const response = await trendApi.put(`/trends/${id}/delete`, updateData);
+    return response.data;
+  },
+
+  deleteComment: async (id: string): Promise<{ success: boolean; message: string }> => {
+    const response = await trendApi.put(`/trends/${id}/comments/delete`);
     return response.data;
   },
 
@@ -147,10 +152,21 @@ createTrend: async (trendData: CreateTrendData): Promise<CreateTrendResponse> =>
     return response.data;
   },
 
+  upvoteComment: async (id: string): Promise<VoteResponse> => {
+    const response = await trendApi.post(`/trends/${id}/upvote/comment`);
+    return response.data;
+  },
+
+  downvoteComment: async (id: string): Promise<VoteResponse> => {
+    const response = await trendApi.post(`/trends/${id}/downvote/comment`);
+    return response.data;
+  },
+
   addComment: async (trendId: string, commentData: CreateCommentData): Promise<CommentResponse> => {
     const response = await trendApi.post(`/trends/${trendId}/comments`, commentData);
     return response.data;
   },
+
 
   getTrendingRewards: async (params?: {
     page?: number;

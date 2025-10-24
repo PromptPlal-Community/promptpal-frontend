@@ -20,6 +20,11 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
   const [isMobileDropdownOpen, setIsMobileDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Helper function to find the count of the selected category
+  const getSelectedCategoryCount = () => {
+    return categories.find(cat => cat.name === selectedCategory)?.count || 0;
+  };
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -42,8 +47,9 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
         >
           <span className="font-medium">
             {selectedCategory} 
+            {/* FIX: Use the helper function to get the correct count for the main button */}
             <span className="ml-1.5 text-gray-500">
-              ({categories.find(cat => cat.name === selectedCategory)?.count || 0})
+              ({getSelectedCategoryCount()})
             </span>
           </span>
           <svg 
@@ -63,8 +69,10 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
               <button
                 key={category.name}
                 onClick={() => {
-                  onCategorySelect(category.name);
-                  setIsMobileDropdownOpen(false);
+                  if (category.count > 0 || category.name === 'All') {
+                    onCategorySelect(category.name);
+                    setIsMobileDropdownOpen(false);
+                  }
                 }}
                 className={`
                   w-full text-left px-4 py-3 transition-colors border-b border-gray-100 last:border-b-0
@@ -73,9 +81,10 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
                       ? 'bg-[#6B46C1] text-white'
                       : 'bg-white text-gray-700 hover:bg-gray-50'
                   }
-                  ${category.count === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+                  ${category.count === 0 && category.name !== 'All' ? 'opacity-50 cursor-not-allowed' : ''}
                 `}
-                disabled={category.count === 0 && category.name !== 'All'}
+                // FIX: Only disable if count is 0 AND it's not the 'All' category
+                disabled={category.count === 0 && category.name !== 'All'} 
               >
                 <div className="flex justify-between items-center">
                   <span className="font-medium">{category.name}</span>
@@ -92,7 +101,7 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
         )}
       </div>
 
-      {/* Desktop Horizontal Layout - Shows on large screens (exactly like original) */}
+      {/* Desktop Horizontal Layout - Shows on large screens */}
       <div className="hidden lg:flex gap-2 flex-wrap">
         {categories.map((category) => (
           <button
@@ -106,8 +115,9 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
                   ? 'bg-[#6B46C1] text-white'
                   : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
               }
-              ${category.count === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+              ${category.count === 0 && category.name !== 'All' ? 'opacity-50 cursor-not-allowed' : ''}
             `}
+            // FIX: Only disable if count is 0 AND it's not the 'All' category
             disabled={category.count === 0 && category.name !== 'All'}
           >
             {category.name}
