@@ -35,7 +35,6 @@ export const useCommunities = () => {
       setError(null);
       
       const response = await communityService.getCommunities(filters);
-      console.log('Communities response:', response);
       
       setCommunities(response.communities || []);
       setPagination({
@@ -60,7 +59,6 @@ export const useCommunities = () => {
       setError(null);
       
       const community = await communityService.getCommunityById(id);
-      console.log('Community by ID response:', community);
       
       setCurrentCommunity(community);
       return community;

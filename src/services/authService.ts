@@ -1,11 +1,10 @@
 import axios, { type AxiosError } from 'axios';
 import Cookies from "js-cookie"
-import type { User } from '../types/auth';
+import type { User, UpdateProfileData, UpdateProfileResponse } from '../types/auth';
 import type { RegisterData, AuthResponse, OTPResponse, ProfileResponse, BasicResponse } from '../types/auth';
 
 const Api = 'https://promptpal-backend-j5gl.onrender.com/api';
 
-// Define interface for error response data
 interface ErrorResponseData {
   message?: string;
   [key: string]: unknown;
@@ -72,16 +71,101 @@ const cookieService = {
 };
 
 const authService = {
+  // --- Update User Profile ---
+updateProfile: async (profileData: UpdateProfileData): Promise<UpdateProfileResponse> => {
+  try {
+    const token = cookieService.getToken();
+    if (!token) {
+      // Return a valid UpdateProfileResponse without statusCode
+      return {
+        success: false,
+        message: 'No authentication token found',
+        user: cookieService.getUser()!, // Use non-null assertion
+        updatedFields: [],
+      };
+    }
+
+    const response = await authApi.put('/users/profile', profileData);
+
+    if (response.data.success && response.data.user) {
+      cookieService.setUser(response.data.user);
+      
+      return {
+        success: true,
+        message: response.data.message || 'Profile updated successfully',
+        user: response.data.user,
+        updatedFields: response.data.updatedFields || [],
+      };
+    } else {
+      return {
+        success: false,
+        message: response.data.message || 'Failed to update profile',
+        user: cookieService.getUser()!,
+        updatedFields: [],
+      };
+    }
+  } catch (error) {
+    console.error('Update profile service error:', error);
+    const axiosError = error as AxiosError<ErrorResponseData>;
+    
+    const currentUser = cookieService.getUser();
+    
+    if (axiosError.response) {
+      return {
+        success: false,
+        message: axiosError.response.data?.message || 'Failed to update profile',
+        user: currentUser!,
+        updatedFields: [],
+      };
+    } else if (axiosError.request) {
+      return {
+        success: false,
+        message: 'No response from server. Please check your network connection.',
+        user: currentUser!,
+        updatedFields: [],
+      };
+    }
+    
+    return {
+      success: false,
+      message: axiosError.message || 'Unexpected client-side error during profile update.',
+      user: currentUser!,
+      updatedFields: [],
+    };
+  }
+},
+
+// --- Refresh User Profile ---
+refreshUserProfile: async (): Promise<{ success: boolean; user?: User }> => {
+  try {
+    const token = cookieService.getToken();
+    if (!token) {
+      return { success: false };
+    }
+
+    const response = await authApi.get('/users/me');
+
+    if (response.status >= 200 && response.status < 300) {
+      const user = response.data;
+      cookieService.setUser(user);
+      return { success: true, user };
+    } else {
+      throw new Error(`Failed to fetch user profile: ${response.status}`);
+    }
+  } catch (error) {
+    console.error('Refresh user profile error:', error);
+    return { success: false };
+  }
+},
+
   // --- Google Authentication ---
   googleAuthRedirect: (): void => {
-    // Simply redirect to Google auth endpoint
     window.location.href = `${Api}/auth/google`;
   },
 
   // --- Handle Google Auth Callback ---
   handleGoogleCallback: async (): Promise<AuthResponse> => {
     try {
-      // Get token from URL (if redirected back from backend)
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('token');
       const userParam = urlParams.get('user');
@@ -513,9 +597,7 @@ const authService = {
     const payload = { email: identifier };
     
     try {
-      console.log("Sending OTP request with payload:", payload);
       const response = await authApi.post('/auth/resend-otp', payload);
-      console.log("OTP resend response:", response.data);
       
       return {
         success: true,
@@ -675,7 +757,6 @@ const authService = {
 
   // --- Social Sign In (Simulated) ---
   socialSignIn: async (provider: string): Promise<BasicResponse> => {
-    console.log(`Simulating social sign-in with ${provider}`);
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     return { 

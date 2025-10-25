@@ -69,8 +69,8 @@ function Navbar({ onMenuToggle }: NavbarProps) {
       {isOpen && (
         <div className="md:hidden bg-white shadow-lg px-4 py-3 space-y-3">
           <Link to="/discover" className="block hover:text-[#270450]/90">Discover</Link>
-          <Link to="/community" className="block hover:text-[#270450]/90">Community</Link>
-          <Link to="/library" className="block hover:text-[#270450]/90">Library</Link>
+          <Link to="/dashboard/community" className="block hover:text-[#270450]/90">Community</Link>
+          <Link to="/dashboard/promptpal-library" className="block hover:text-[#270450]/90">Library</Link>
           <Link to="/pricing" className="block hover:text-[#270450]/90">Pricing</Link>
           <Link className="w-full px-4 py-2 rounded-lg text-[#270450]/90 hover:bg-purple-100"
           to="/login"

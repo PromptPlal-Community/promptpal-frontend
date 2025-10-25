@@ -51,13 +51,12 @@ export const useTrends = () => {
     limit?: number;
     community?: string;
     sortBy?: string;
-  }): Promise<TrendsResponse> => { // Add return type
+  }): Promise<TrendsResponse> => { 
     try {
       setLoading(true);
       setError(null);
       
       const response: TrendsResponse = await trendService.getTrends(params);
-      console.log('Trends response:', response);
       
       setTrends(response.trends || []);
       setPagination({
@@ -67,11 +66,11 @@ export const useTrends = () => {
         totalRecords: response.totalTrends || 0,
       });
 
-      return response; // Return the response
+      return response;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch trends';
       setError(errorMessage);
-      throw err; // Re-throw the error
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -83,7 +82,6 @@ export const useTrends = () => {
       setError(null);
       
       const response: TrendResponse = await trendService.getTrendById(id);
-      console.log('Trend by ID response:', response);
       
       setCurrentTrend(response.trend);
       setComments(response.comments || []); // This should now work
@@ -105,12 +103,10 @@ export const useTrends = () => {
       setError(null);
 
       if (!authService.isAuthenticated()) {
-        console.log("errrrrrrrooooooooo")
         throw new Error('You must be logged in to create a trend');
       }
 
       const response: CreateTrendResponse = await trendService.createTrend(trendData);
-      console.log("errrrooooooo")
       setTrends(prev => [response.trend, ...prev]);
       return response.trend;
     } catch (err) {
@@ -314,10 +310,9 @@ const result: VoteResponse = await trendService.downvoteComment(commentId);
   }
 }, []);
 
-const rewardComment = useCallback(async (commentId: string): Promise<void> => {
+const rewardComment = useCallback(async (): Promise<void> => {
   try {
     // Implement comment reward logic
-    console.log('Rewarding comment:', commentId);
   } catch (err) {
     throw new Error(err instanceof Error ? err.message : 'Failed to reward comment');
   }
@@ -461,7 +456,6 @@ export const useCommunities = () => {
       setError(null);
       
       const response = await communityService.getCommunities(params);
-      console.log('Communities response:', response);
       
       setCommunities(response.communities || []);
       setPagination({
@@ -483,7 +477,6 @@ export const useCommunities = () => {
       setError(null);
       
       const community = await communityService.getCommunityById(id);
-      console.log('Community by ID response:', community);
       
       setCurrentCommunity(community);
       return community;
@@ -707,14 +700,14 @@ export const useTrendingRewards = () => {
     page?: number;
     limit?: number;
     timeFrame?: string;
-  }): Promise<TrendsResponse> => { // Add return type
+  }): Promise<TrendsResponse> => { 
     try {
       setLoading(true);
       setError(null);
       
       const response: TrendsResponse = await trendService.getTrendingRewards(params);
       setTrends(response.trends || []);
-      return response; // Return the response
+      return response;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch trending rewards';
       setError(errorMessage);

@@ -5,6 +5,7 @@ export interface User {
   email: string;
   name: string;
   username?: string;
+  profile?: UserProfile;
   avatar?: string;
   isEmailVerified: boolean;
   isVerified: boolean;
@@ -64,4 +65,87 @@ export interface ApiError {
   message: string;
   status?: number;
   code?: string;
+}
+
+
+export interface UserProfile {
+  bio?: string;
+  dob?: Date;
+  gender: 'male' | 'female' | 'other' | 'prefer-not-to-say';
+  location?: string;
+  socialLinks?: SocialLinks;
+}
+
+export interface SocialLinks {
+  website?: string;
+  twitter?: string;
+  github?: string;
+  linkedin?: string;
+  portfolio?: string;
+  instagram?: string;
+}
+
+export interface UpdateProfileData {
+  name?: string;
+  username?: string;
+  email?: string;
+  
+  profile?: {
+    bio?: string;
+    dob?: Date | string; // Allow string for form inputs
+    gender?: 'male' | 'female' | 'other' | 'prefer-not-to-say';
+    location?: string;
+    socialLinks?: {
+      website?: string;
+      twitter?: string;
+      github?: string;
+      linkedin?: string;
+      portfolio?: string;
+      instagram?: string;
+    };
+  };
+  
+  avatar?: string;
+  
+  preferences?: {
+    language?: string;
+    timezone?: string;
+    emailNotifications?: boolean;
+    theme?: 'light' | 'dark' | 'auto';
+  };
+}
+
+export interface UpdateProfileResponse {
+  success: boolean;
+  message: string;
+  user: User;
+  updatedFields: string[];
+}
+
+export interface UpdateProfileError {
+  success: false;
+  error: string;
+  fieldErrors?: {
+    [key: string]: string;
+  };
+  code?: 'EMAIL_EXISTS' | 'USERNAME_EXISTS' | 'VALIDATION_ERROR' | 'SERVER_ERROR';
+}
+
+export interface ProfileFormData {
+  name: string;
+  username: string;
+  email: string;
+  bio: string;
+  dob: string; 
+  gender: 'male' | 'female' | 'other' | 'prefer-not-to-say';
+  location: string;
+  socialLinks: {
+    website: string;
+    twitter: string;
+    github: string;
+    linkedin: string;
+    portfolio: string;
+    instagram: string;
+  };
+  avatar: string;
 }

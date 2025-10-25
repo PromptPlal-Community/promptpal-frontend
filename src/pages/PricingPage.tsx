@@ -184,30 +184,6 @@ const PricingPage: React.FC = () => {
                 </span>
               </button>
             </div>
-
-            {/* Currency Toggle - Note: This is now decorative since currency comes from user preferences */}
-            <div className="bg-white rounded-lg border border-gray-200 p-1 flex">
-              <button
-                onClick={() => setCurrency('USD')}
-                className={`px-4 py-2 rounded-md font-medium text-sm ${
-                  currency === 'USD'
-                    ? 'bg-purple-600 text-white'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                USD
-              </button>
-              <button
-                onClick={() => setCurrency('NGN')}
-                className={`px-4 py-2 rounded-md font-medium text-sm ${
-                  currency === 'NGN'
-                    ? 'bg-purple-600 text-white'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                NGN
-              </button>
-            </div>
           </div>
 
           {/* Error Display */}

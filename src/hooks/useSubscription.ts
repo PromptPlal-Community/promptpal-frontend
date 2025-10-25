@@ -1,4 +1,3 @@
-// hooks/useSubscription.ts
 import { useState, useEffect, useCallback } from 'react';
 import { subscriptionService } from '../services/subscriptionService';
 import type  { SubscriptionPlan, UsageLimits, SubscriptionState } from '../types/subscription';

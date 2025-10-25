@@ -89,8 +89,6 @@ export const promptService = {
     const response = await promptApi.get('/prompts', { 
       params: filters 
     });
-    console.log(response)
-    console.log(response.data)
     return response.data;
   },
 
@@ -109,8 +107,6 @@ export const promptService = {
   // Get all prompts with filtering
   getAllPrompts: async (filters: PromptFilters = {}): Promise<PaginatedResponse<Prompt>> => {
     const response = await promptApi.get('/prompts/filtered', { params: filters });
-    console.log('getAllPrompts response:', response);
-    console.log('getAllPrompts response:', response.data);
     return response.data;
   },
 
@@ -122,12 +118,6 @@ export const promptService = {
 
   // Create new prompt - accepts FormData directly
 createPrompt: async (formData: FormData): Promise<Prompt> => {
-  // For debugging - log what's being sent
-  console.log('Sending FormData:');
-  for (const [key, value] of formData.entries()) {
-    console.log(key, value);
-  }
-
   const response = await promptApi.post('/prompts', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
@@ -139,13 +129,6 @@ createPrompt: async (formData: FormData): Promise<Prompt> => {
 
   // Update prompt
 updatePrompt: async (id: string, updateData: FormData): Promise<Prompt> => {
-  console.log('🔄 Updating prompt:', id);
-  console.log('📤 FormData entries:');
-  
-  // Log form data for debugging with proper typing
-  for (const [key, value] of (updateData as unknown as Iterable<[string, FormDataEntryValue]>)) {
-    console.log(`  ${key}:`, value);
-  }
 
   try {
     const response = await promptApi.put(`/prompts/${id}`, updateData, {
@@ -154,10 +137,9 @@ updatePrompt: async (id: string, updateData: FormData): Promise<Prompt> => {
       },
     });
     
-    console.log('✅ Update successful:', response.data);
     return response.data.data; // Return the prompt data directly
   } catch (error: unknown) {
-    console.error('❌ Update failed:', error);
+    console.error(' Update failed:', error);
     
     if (typeof error === 'object' && error !== null && 'response' in error) {
       const axiosError = error as { 
@@ -167,8 +149,8 @@ updatePrompt: async (id: string, updateData: FormData): Promise<Prompt> => {
           statusText?: string;
         } 
       };
-      console.error('❌ Error details:', axiosError.response?.data);
-      console.error('❌ Error status:', axiosError.response?.status);
+      console.error(' Error details:', axiosError.response?.data);
+      console.error(' Error status:', axiosError.response?.status);
     }
     
     throw error;
@@ -179,7 +161,6 @@ updatePrompt: async (id: string, updateData: FormData): Promise<Prompt> => {
 deletePrompt: async (id: string): Promise<{ success: boolean; message: string }> => {
   try {
     const response = await promptApi.delete(`/prompts/${id}`);
-    console.log('Delete response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Delete prompt service error:', error);
@@ -295,11 +276,9 @@ export const dashboardService = {
       
       // ✅ FIX: Use getUserPrompts instead of getAllPrompts to get only user's prompts
       const userPromptsResponse = await promptService.getUserPrompts({ limit: 100 });
-      console.log(userPromptsResponse)
       const userPrompts = userPromptsResponse.prompts || [];
       const pagination = userPromptsResponse.pagination || { totalRecords: userPrompts.length };
 
-      console.log('User prompts for dashboard:', userPrompts.length);
       
       // Use safe access with optional chaining and default values
       const stats = {

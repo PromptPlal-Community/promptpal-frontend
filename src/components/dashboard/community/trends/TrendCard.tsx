@@ -12,9 +12,10 @@ import {
   Bookmark,
   Flag,
   ArrowBigUp,
-  ArrowBigDown
+  ArrowBigDown,
 } from 'lucide-react';
 import type { Trend } from '../../../../types/trend';
+import { MdDelete } from 'react-icons/md';
 
 type CategoryColorKey = 
   | 'Technology' 
@@ -74,6 +75,7 @@ interface TrendCardProps {
   onReward?: (trendId: string) => void;
   onShare?: (trend: Trend) => void;
   onBookmark?: (trendId: string) => void;
+  onDelete?: (trendId: string) => void;
   className?: string;
   showCommunity?: boolean;
 }
@@ -86,6 +88,7 @@ export default function TrendCard({
   onReward,
   onShare,
   onBookmark,
+  onDelete,
   className = "",
   showCommunity = true
 }: TrendCardProps) {
@@ -121,6 +124,13 @@ export default function TrendCard({
       onViewTrend(trend._id);
     } else {
       navigate(`/trends/${trend._id}#comments`);
+    }
+  };
+  
+  const handleDeleteTrend = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onDelete) {
+      onDelete(trend._id);
     }
   };
 
@@ -326,6 +336,13 @@ export default function TrendCard({
               title="Save"
             >
               <Bookmark className="w-4 h-4 text-purple-500" />
+            </button>
+            <button 
+              onClick={handleDeleteTrend}
+              className="p-2 hover:bg-purple-100 rounded-lg transition-colors"
+              title="Save"
+            >
+              <MdDelete className="w-4 h-4 text-purple-500" />
             </button>
             <button 
               onClick={handleShareClick}
