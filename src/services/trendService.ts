@@ -138,7 +138,7 @@ createTrend: async (trendData: CreateTrendData): Promise<CreateTrendResponse> =>
   },
 
   deleteTrend: async (id: string): Promise<{ success: boolean; message: string }> => {
-    const response = await trendApi.delete(`/trends/${id}`);
+    const response = await trendApi.delete(`/trends/${id}/delete`);
     return response.data;
   },
 

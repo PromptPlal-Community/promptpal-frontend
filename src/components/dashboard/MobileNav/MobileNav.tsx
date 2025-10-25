@@ -123,7 +123,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
   const loadCommunities = async () => {
     try {
       setCommunitiesLoading(true);
-      await getCommunities({ limit: 8 }); // Limit to 8 communities
+      await getCommunities({ limit: 8 });
     } catch (error) {
       console.error('Failed to load communities:', error);
     } finally {
@@ -133,7 +133,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
 
   const handleItemClick = (key: string) => {
     onItemClick(key);
-    setIsSidebarOpen(false); // Close sidebar after clicking
+    setIsSidebarOpen(false);
   };
 
   const handleUserAvatarClick = () => {
@@ -141,7 +141,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
   };
 
   const handleUpgradeClick = () => {
-    handleItemClick('subscription');
+    handleItemClick('settings');
   };
 
   const handleCommunityClick = (communityId: string) => {
@@ -333,7 +333,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
                       ))}
                       
                       {/* Show More Button */}
-                      {communities.length > 6 && (
+                      {communities.length > 0 && (
                         <button
                           onClick={handleViewAllCommunities}
                           className="w-full text-center py-2 text-sm text-purple-600 hover:text-purple-700 transition-colors font-medium"

@@ -3,13 +3,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
 import type { LoginCredentials, RegisterData } from '../types/auth';
-import type { User } from '../types/auth';
+import type { User, UpdateProfileData, UpdateProfileResponse } from '../types/auth';
 import { useMessage } from './useMessage';
 
 export const useAuth = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [googleLoading, setGoogleLoading] = useState<boolean>(false);
-  const [user, setUser] = useState<User | null>(null); // Add user state
+  const [profileLoading, setProfileLoading] = useState<boolean>(false);
+  const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
   const { showMessage } = useMessage();
 
@@ -18,6 +19,64 @@ export const useAuth = () => {
     const currentUser = authService.getCurrentUser();
     setUser(currentUser);
   }, []);
+
+  // Update profile function
+  const updateProfile = async (profileData: UpdateProfileData): Promise<UpdateProfileResponse> => {
+    setProfileLoading(true);
+    
+    try {
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      // Process data before sending (convert date strings to Date objects)
+      const processedData = { ...profileData };
+      if (profileData.profile?.dob && typeof profileData.profile.dob === 'string') {
+        processedData.profile = {
+          ...profileData.profile,
+          dob: new Date(profileData.profile.dob)
+        };
+      }
+
+      const response = await authService.updateProfile(processedData);
+      
+      if (!response.success) {
+        showMessage(response.message || 'Failed to update profile', 'error');
+        throw new Error(response.message || 'Failed to update profile');
+      }
+
+      // Update user state with new profile data
+      const updatedUser = authService.getCurrentUser();
+      setUser(updatedUser);
+
+      showMessage('Profile updated successfully!', 'success');
+      return response;
+      
+    } catch (error: unknown) {
+      console.error('Update profile error:', error);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to update profile';
+      showMessage(errorMessage, 'error');
+      throw error;
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  // Update avatar separately
+  const updateAvatar = async (avatarUrl: string): Promise<boolean> => {
+    setProfileLoading(true);
+    
+    try {
+      const response = await updateProfile({ avatar: avatarUrl });
+      return response.success;
+    } catch (error) {
+      return false;
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
   const handleLogin = async (
     credentials: LoginCredentials,
@@ -278,21 +337,47 @@ export const useAuth = () => {
     return authService.hasGoogleAccount();
   };
 
+  // // Refresh user data from server
+  // const refreshUser = async (): Promise<void> => {
+  //   try {
+  //     const response = await authService.refreshUserProfile();
+  //     if (response.success) {
+  //       const currentUser = authService.getCurrentUser();
+  //       setUser(currentUser);
+  //     }
+  //   } catch (error) {
+  //     console.error('Failed to refresh user profile:', error);
+  //   }
+  // };
+
   return {
+    // State
     loading,
     googleLoading,
+    profileLoading,
     user,
+    
+    // Auth functions
     login,
     register,
     logout,
+    forgotPassword,
+    resetPassword,
+    
+    // Google auth functions
     googleLogin,
+    googleRegister,
+    handleGoogleCallback,
     linkGoogleAccount,
     hasGoogleAccount,
+    
+    // Profile functions
+    updateProfile,
+    updateAvatar,
+    // refreshUser,
+    
+    // Utility functions
     isAuthenticated,
     getCurrentUser,
-    handleGoogleCallback,
-    googleRegister,
-    forgotPassword,
-    resetPassword
   };
 };

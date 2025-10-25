@@ -34,7 +34,6 @@ export const usePrompts = () => {
       setError(null);
       
       const response = await promptService.getUserPrompts(filters);
-      console.log('User prompts response:', response);
       
       setPrompts(response.prompts || []);
       setPagination(response.pagination || {
@@ -56,7 +55,6 @@ export const usePrompts = () => {
       setError(null);
       
       const response = await promptService.getAllPrompts(newFilters || {});
-      console.log('All prompts response:', response);
       
       setPrompts(response.prompts || response.data || []);
       setPagination(response.pagination || {
@@ -76,7 +74,6 @@ const getPublicPrompts = useCallback(async (filters = {}) => {
   setLoading(true);
   setError(null);
   try {
-    console.log('🔓 Fetching PUBLIC prompts only');
     const response = await promptService.getPublicPrompts(filters);
     
     // Return the response but don't set prompts in the hook state
@@ -128,7 +125,6 @@ const getPublicPrompts = useCallback(async (filters = {}) => {
   };
 
   const deletePrompt = async (id: string): Promise<void> => {
-    console.log('Deleting prompt with id:', id);
     try {
       await promptService.deletePrompt(id);
       setPrompts(prev => prev.filter(prompt => prompt._id !== id));

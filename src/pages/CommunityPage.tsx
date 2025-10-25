@@ -15,8 +15,8 @@ interface CommunityPageProps {
 }
 
 const CommunityPage: React.FC<CommunityPageProps> = () => {
-  const { trends, loading, error, getTrends } = useTrends();
-  const { communities } = useCommunities(); // Uncomment this
+  const { trends, loading, error, getTrends, deleteTrend } = useTrends();
+  const { communities } = useCommunities();
   const navigate = useNavigate();
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -47,6 +47,16 @@ const CommunityPage: React.FC<CommunityPageProps> = () => {
   const handleCreateTrend = () => {
     navigate('/dashboard/create-trends');
   };
+
+const handleDeleteTrend = async (id: string) => {
+  console.log("clicked");
+  try {
+    await deleteTrend(id);
+    console.log("Trend deleted successfully");
+  } catch (error) {
+    console.error("Failed to delete trend:", error);
+  }
+};
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -266,6 +276,7 @@ const CommunityPage: React.FC<CommunityPageProps> = () => {
                     <TrendCard
                       key={trend._id}
                       trend={trend}
+                      onDelete={handleDeleteTrend}
                       onViewTrend={handleViewTrend}
                       onUpvote={handleUpvote}
                       onComment={handleComment}
